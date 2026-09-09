@@ -71,6 +71,132 @@
       "createdAt": "2026-09-08",
       "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
       "prompt": "Fotografia de uma única arara-vermelha adulta em voo diagonal, com asas abertas, corpo e cauda completos, anatomia e penas realistas, luz natural difusa, cores vermelha, dourada e azul controladas e fundo RGBA genuinamente transparente; sem vegetação, texto, marcas, recortes ou elementos extras."
+    },
+    {
+      "path": "/images/floresta-viva-mark-header.png",
+      "scene": "Header",
+      "role": "Versão original do símbolo da marca Floresta Viva",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-08-31",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/veias-river-mist-desktop.png",
+      "scene": "Veias",
+      "role": "Rio amazônico panorâmico para a composição desktop",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-02",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/veias-river-mist-mobile.png",
+      "scene": "Veias",
+      "role": "Rio amazônico vertical para a composição mobile",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-02",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/fauna/ariranha-amazonia.png",
+      "scene": "Camadas",
+      "role": "Ariranha da camada Rio",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/fauna/anta-amazonia.png",
+      "scene": "Camadas",
+      "role": "Anta da camada Solo",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/fauna/jaguatirica-amazonia.png",
+      "scene": "Camadas",
+      "role": "Jaguatirica da camada Sub-bosque",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/fauna/macaco-aranha-amazonia.png",
+      "scene": "Camadas",
+      "role": "Macaco-aranha da camada Copa",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/fauna/harpia-amazonia.png",
+      "scene": "Camadas",
+      "role": "Harpia da camada Céu",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/territorios/territorios-abertura.png",
+      "scene": "Territórios",
+      "role": "Vista aérea de abertura da seção",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/territorios/territorios-textura.png",
+      "scene": "Territórios",
+      "role": "Textura de transição e profundidade da seção",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/territorios/terra-firme.png",
+      "scene": "Territórios",
+      "role": "Paisagem do território Terra firme",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/territorios/varzea.png",
+      "scene": "Territórios",
+      "role": "Paisagem do território Várzea",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/territorios/igapo.png",
+      "scene": "Territórios",
+      "role": "Paisagem do território Igapó",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
+    },
+    {
+      "path": "/images/territorios/territorios-transicao-final.png",
+      "scene": "Territórios, Mapa e Inteiro",
+      "role": "Panorama compartilhado nas transições finais da jornada",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-07",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Prompt original não preservado no registro local."
     }
   ]
 }
