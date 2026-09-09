@@ -24,6 +24,8 @@ type HeaderTheme = 'dark' | 'light';
 export function SiteHeader() {
   const headerRef = useRef<HTMLElement>(null);
   const lastTriggerRef = useRef<HTMLElement | null>(null);
+  const headerThemeRef = useRef<HeaderTheme>('dark');
+  const currentChapterRef = useRef('despertar');
   const [menuMounted, setMenuMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<MenuKey>('index');
@@ -48,9 +50,12 @@ export function SiteHeader() {
     if (!header) return;
 
     const reduceMotion = motionProfile === 'reduced';
+    const sections = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-header-theme]'),
+    );
     let lastY = window.scrollY;
     let headerVisible = true;
-    let ticking = false;
+    let frameId: number | null = null;
 
     const setVisibility = (visible: boolean) => {
       if (headerVisible === visible) return;
@@ -66,17 +71,20 @@ export function SiteHeader() {
 
     const updateTheme = () => {
       const readingLine = Math.min(96, window.innerHeight * 0.14);
-      const sections = document.querySelectorAll<HTMLElement>(
-        '[data-header-theme]',
-      );
 
       for (const section of sections) {
         const bounds = section.getBoundingClientRect();
         if (bounds.top <= readingLine && bounds.bottom > readingLine) {
           const theme = section.dataset.headerTheme as HeaderTheme | undefined;
-          if (theme) setHeaderTheme(theme);
+          if (theme && theme !== headerThemeRef.current) {
+            headerThemeRef.current = theme;
+            setHeaderTheme(theme);
+          }
           const chapter = section.dataset.headerChapter ?? section.id;
-          if (chapter) setCurrentChapter(chapter);
+          if (chapter && chapter !== currentChapterRef.current) {
+            currentChapterRef.current = chapter;
+            setCurrentChapter(chapter);
+          }
           break;
         }
       }
@@ -97,13 +105,12 @@ export function SiteHeader() {
       }
 
       lastY = nextY;
-      ticking = false;
+      frameId = null;
     };
 
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(update);
+    const scheduleUpdate = () => {
+      if (frameId !== null) return;
+      frameId = window.requestAnimationFrame(update);
     };
 
     updateTheme();
@@ -116,12 +123,13 @@ export function SiteHeader() {
         overwrite: true,
       });
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', updateTheme);
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', updateTheme);
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
       gsap.killTweensOf(header);
     };
   }, [menuOpen, motionProfile]);

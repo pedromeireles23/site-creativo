@@ -103,11 +103,13 @@
 .heroForestMid {
   z-index: 3;
   filter: saturate(0.78) brightness(0.88);
+  transform: translate3d(0, 100%, 0);
 }
 
 .heroForestFront {
   z-index: 5;
   filter: saturate(0.86) brightness(0.68) contrast(1.05);
+  transform: translate3d(0, 100%, 0);
 }
 
 .heroTransitionBridge {

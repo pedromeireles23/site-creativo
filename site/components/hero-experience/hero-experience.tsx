@@ -12,6 +12,9 @@ import {
   useGSAP,
 } from '@/lib/gsap';
 
+const TRANSPARENT_PIXEL =
+  'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+
 export function HeroExperience() {
   const heroRef = useRef<HTMLElement>(null);
   const breathRef = useRef<HTMLElement>(null);
@@ -480,13 +483,20 @@ export function HeroExperience() {
         <div className={styles.heroTransitionBridge} aria-hidden="true">
           <div className={styles.heroTransitionPlane} data-transition-plane>
             <div className={styles.heroTransitionCanvas}>
-              <Image
-                className={styles.heroTransitionMist}
-                src="/images/forest-mist-transition.png"
-                alt=""
-                fill
-                sizes="100vw"
-              />
+              <picture>
+                <source
+                  media="(max-width: 900px), (prefers-reduced-motion: reduce)"
+                  srcSet={TRANSPARENT_PIXEL}
+                />
+                <Image
+                  className={styles.heroTransitionMist}
+                  src="/images/forest-mist-transition.png"
+                  alt=""
+                  fill
+                  sizes="100vw"
+                  fetchPriority="low"
+                />
+              </picture>
             </div>
           </div>
         </div>
@@ -525,6 +535,7 @@ export function HeroExperience() {
               alt=""
               fill
               sizes="100vw"
+              fetchPriority="low"
               aria-hidden="true"
             />
 
@@ -544,6 +555,7 @@ export function HeroExperience() {
               alt=""
               fill
               sizes="100vw"
+              fetchPriority="low"
               aria-hidden="true"
             />
 
@@ -594,6 +606,7 @@ export function HeroExperience() {
         id="folego"
         aria-labelledby="folego-title"
         data-header-theme="light"
+        data-header-chapter="folego"
       >
         <p className={styles.chapterLabel} data-breath-chapter>
           <span>02</span>
