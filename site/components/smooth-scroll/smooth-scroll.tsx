@@ -139,7 +139,32 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         gsap.ticker.lagSmoothing(0);
 
         let refreshTimeout: number | undefined;
+        let hashFrame: number | undefined;
         let tickerActive = false;
+
+        const scrollToHash = () => {
+          hashFrame = undefined;
+          const hash = decodeURIComponent(window.location.hash.slice(1));
+          if (!hash) return;
+
+          const target = document.getElementById(hash);
+          if (!target) return;
+
+          lenis.resize();
+          scheduleScrollRefresh();
+          hashFrame = window.requestAnimationFrame(() => {
+            hashFrame = undefined;
+            lenis.scrollTo(target, { force: true, immediate: true });
+          });
+        };
+
+        const scheduleHashScroll = () => {
+          if (hashFrame !== undefined) {
+            window.cancelAnimationFrame(hashFrame);
+          }
+
+          hashFrame = window.requestAnimationFrame(scrollToHash);
+        };
 
         const setTickerActive = (active: boolean) => {
           if (tickerActive === active) return;
@@ -179,6 +204,9 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
           window.addEventListener('load', scheduleRefresh, { once: true });
         }
 
+        const initialHashTimeout = window.setTimeout(scheduleHashScroll, 180);
+        const settledHashTimeout = window.setTimeout(scheduleHashScroll, 720);
+
         void document.fonts.ready.then(() => {
           if (!disposed) scheduleRefresh();
         });
@@ -196,6 +224,12 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
           window.removeEventListener('resize', scheduleRefresh);
           window.removeEventListener('orientationchange', scheduleRefresh);
           window.clearTimeout(refreshTimeout);
+          window.clearTimeout(initialHashTimeout);
+          window.clearTimeout(settledHashTimeout);
+
+          if (hashFrame !== undefined) {
+            window.cancelAnimationFrame(hashFrame);
+          }
 
           lenis.off('scroll', updateScrollTrigger);
           setTickerActive(false);

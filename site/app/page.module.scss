@@ -610,8 +610,12 @@
   z-index: 61;
   display: flex;
   min-height: 0;
+  min-inline-size: 0;
   flex: 1;
   gap: clamp(0.35rem, 0.55vw, 0.65rem);
+  margin: 0;
+  padding: 0;
+  border: 0;
   overflow: visible;
   background: var(--ivory-50);
 }
@@ -1888,6 +1892,8 @@
 }
 
 .macawFeatherStrips {
+  --strip-count: 7;
+
   position: absolute;
   z-index: 7;
   inset: 0;
@@ -1901,6 +1907,7 @@
     border-left: 1px solid rgb(243 240 231 / 12%);
     background: var(--forest-900);
     box-shadow: 0 -1rem 3rem rgb(7 19 15 / 12%);
+    visibility: hidden;
   }
 
   > span:nth-child(2n) {
@@ -1915,7 +1922,7 @@
 .macawStripImage {
   right: auto !important;
   left: calc(var(--strip-index) * -100%) !important;
-  width: 700% !important;
+  width: calc(var(--strip-count) * 100%) !important;
   max-width: none !important;
   object-fit: contain;
   object-position: center;
@@ -2938,7 +2945,14 @@
   }
 
   .macawFeatherStrips {
-    display: none;
+    --strip-count: 5;
+
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+
+    > span:nth-child(n + 6) {
+      display: none;
+    }
   }
 
   .wholePulse {
@@ -3140,6 +3154,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .faunaCard,
+  .faunaCard::after,
+  .faunaImage,
+  .faunaScientific,
+  .faunaDescription,
+  .faunaFutureLink {
+    transition: none;
+  }
+
   .scrollCue,
   .scrollCuePreview,
   .scrollCuePreviewImage,

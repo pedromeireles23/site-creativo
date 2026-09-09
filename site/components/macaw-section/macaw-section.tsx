@@ -9,6 +9,7 @@ import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 const canopyImage = '/images/macaw/canopy-opening-amazon.png';
 const macawImage = '/images/macaw/scarlet-macaw-flight.png';
+const nextPanoramaImage = '/images/territorios/territorios-transicao-final.png';
 
 export function MacawSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -71,7 +72,7 @@ export function MacawSection() {
         gsap.set(lines, { yPercent: 118 });
         gsap.set(meta, { autoAlpha: 0, y: 18 });
         gsap.set(traces, { scaleX: 0, transformOrigin: '0% 50%' });
-        gsap.set(strips, { yPercent: 104 });
+        gsap.set(strips, { autoAlpha: 1, yPercent: 104 });
 
         const timeline = gsap.timeline({
           defaults: { ease: 'none' },
@@ -135,6 +136,8 @@ export function MacawSection() {
       });
 
       media.add('(max-width: 900px)', () => {
+        const compactStrips = strips.slice(0, 5);
+
         gsap.set(background, { scale: 1.055 });
         gsap.set(bird, {
           autoAlpha: 1,
@@ -147,7 +150,7 @@ export function MacawSection() {
         gsap.set(lines, { yPercent: 0 });
         gsap.set(meta, { autoAlpha: 1, y: 0 });
         gsap.set(traces, { scaleX: 0.35, transformOrigin: '0% 50%' });
-        gsap.set(strips, { yPercent: 104 });
+        gsap.set(compactStrips, { autoAlpha: 1, yPercent: 104 });
 
         const timeline = gsap.timeline({
           defaults: { ease: 'none' },
@@ -176,7 +179,12 @@ export function MacawSection() {
             0,
           )
           .to(ghost, { autoAlpha: 0.68, duration: 0.55 }, 0.16)
-          .to(copy, { y: -10, duration: 1 }, 0);
+          .to(copy, { y: -10, duration: 1 }, 0)
+          .to(
+            compactStrips,
+            { yPercent: 0, stagger: 0.035, duration: 0.18 },
+            0.8,
+          );
 
         return () => timeline.kill();
       });
@@ -269,7 +277,7 @@ export function MacawSection() {
             >
               <Image
                 className={styles.macawStripImage}
-                src={macawImage}
+                src={nextPanoramaImage}
                 alt=""
                 fill
                 sizes="100vw"

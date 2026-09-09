@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type KeyboardEvent, useRef, useState } from 'react';
 import Image from 'next/image';
 import styles from '@/app/page.module.scss';
 
@@ -54,6 +54,30 @@ const fauna = [
 
 export function FaunaSection() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const buttonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  const handlePanelKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    index: number,
+  ) => {
+    let nextIndex: number | undefined;
+
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      nextIndex = (index + 1) % fauna.length;
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      nextIndex = (index - 1 + fauna.length) % fauna.length;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = fauna.length - 1;
+    }
+
+    if (nextIndex === undefined) return;
+
+    event.preventDefault();
+    setActiveIndex(nextIndex);
+    buttonRefs.current[nextIndex]?.focus();
+  };
 
   return (
     <section
@@ -72,7 +96,10 @@ export function FaunaSection() {
           <h2 id="camadas-title">Nada vive sozinho.</h2>
         </header>
 
-        <div className={styles.faunaPanels}>
+        <fieldset
+          className={styles.faunaPanels}
+          aria-label="Camadas da fauna amazônica"
+        >
           {fauna.map((animal, index) => {
             const isActive = index === activeIndex;
 
@@ -94,13 +121,19 @@ export function FaunaSection() {
                 <div className={styles.faunaShade} aria-hidden="true" />
 
                 <button
+                  ref={(element) => {
+                    buttonRefs.current[index] = element;
+                  }}
                   className={styles.faunaButton}
                   type="button"
                   aria-pressed={isActive}
                   aria-label={`Destacar ${animal.name}, camada ${animal.layer}`}
                   onClick={() => setActiveIndex(index)}
                   onFocus={() => setActiveIndex(index)}
-                  onMouseEnter={() => setActiveIndex(index)}
+                  onKeyDown={(event) => handlePanelKeyDown(event, index)}
+                  onPointerMove={(event) => {
+                    if (event.pointerType === 'mouse') setActiveIndex(index);
+                  }}
                 >
                   <span className={styles.faunaMeta}>
                     <span>{animal.number}</span>
@@ -111,17 +144,22 @@ export function FaunaSection() {
                     <span className={styles.faunaScientific}>
                       {animal.scientificName}
                     </span>
-                    <strong className={styles.faunaCardName}>{animal.name}</strong>
-                    <span className={styles.faunaDescription}>{animal.copy}</span>
+                    <strong className={styles.faunaCardName}>
+                      {animal.name}
+                    </strong>
+                    <span className={styles.faunaDescription}>
+                      {animal.copy}
+                    </span>
                     <span className={styles.faunaFutureLink}>
-                      Página da espécie em breve <span aria-hidden="true">↗</span>
+                      Página da espécie em breve{' '}
+                      <span aria-hidden="true">↗</span>
                     </span>
                   </span>
                 </button>
               </article>
             );
           })}
-        </div>
+        </fieldset>
       </div>
     </section>
   );
