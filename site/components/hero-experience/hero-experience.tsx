@@ -483,7 +483,6 @@ export function HeroExperience() {
                 src="/images/forest-mist-transition.png"
                 alt=""
                 fill
-                loading="eager"
                 sizes="100vw"
               />
             </div>
@@ -523,7 +522,6 @@ export function HeroExperience() {
               src="/images/forest-transition-mid.png"
               alt=""
               fill
-              loading="eager"
               sizes="100vw"
               aria-hidden="true"
             />
@@ -543,7 +541,6 @@ export function HeroExperience() {
               src="/images/forest-transition-front.png"
               alt=""
               fill
-              loading="eager"
               sizes="100vw"
               aria-hidden="true"
             />

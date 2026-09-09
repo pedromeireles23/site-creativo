@@ -372,7 +372,6 @@ export function TerritoriesSection() {
             alt=""
             fill
             sizes="100vw"
-            loading="eager"
           />
           <div className={styles.territoryFinaleShade} />
           <div className={styles.territoryFinaleMist} />

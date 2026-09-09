@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import Image from 'next/image';
+import Image, { getImageProps } from 'next/image';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -13,6 +13,15 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 export function VeinsSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const isSmoothScrollReady = useSmoothScrollReady();
+  const {
+    props: { srcSet: mobileWaterSrcSet },
+  } = getImageProps({
+    src: '/images/veias-river-mist-mobile.png',
+    alt: 'Rio amazônico serpenteando pela floresta sob a névoa',
+    width: 1122,
+    height: 1402,
+    sizes: '100vw',
+  });
 
   useGSAP(
     () => {
@@ -178,7 +187,8 @@ export function VeinsSection() {
       <picture className={styles.waterVisual}>
         <source
           media="(max-width: 900px)"
-          srcSet="/images/veias-river-mist-mobile.png"
+          srcSet={mobileWaterSrcSet}
+          sizes="100vw"
         />
         <Image
           className={styles.waterImage}
