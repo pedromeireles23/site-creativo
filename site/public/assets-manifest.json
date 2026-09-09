@@ -1,0 +1,76 @@
+{
+  "assets": [
+    {
+      "path": "/images/hero-amazon-dawn.png",
+      "scene": "Despertar",
+      "role": "Hero cinematográfico",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-08-31",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Fotografia editorial cinematográfica e original da floresta amazônica ao amanhecer, com névoa, rio, onça parcialmente oculta à direita, arara distante, verdes profundos e espaço negativo para tipografia; sem texto, marcas, pessoas ou objetos turísticos."
+    },
+    {
+      "path": "/images/floresta-viva-mark-header-clean.png",
+      "scene": "Header",
+      "role": "Símbolo da marca Floresta Viva",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-08-31",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Edição precisa da marca horizontal: remover somente as extensões laterais semelhantes a asas/penas; preservar copa amazônica, samaúma, raízes e rio em espaço negativo; silhueta preta sólida sobre transparência RGBA real, sem texto, xadrez, fundo, borda ou sombra."
+    },
+    {
+      "path": "/images/forest-transition-mid.png",
+      "scene": "Despertar",
+      "role": "Copa amazônica intermediária para parallax do hero",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-01",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Copa intermediária fotorealista da Amazônia em panorama 16:9, árvores maduras e emergentes, amanhecer úmido e contraluz discreta, fundo RGBA realmente transparente, sem texto, marcas, animais ou paisagem retangular."
+    },
+    {
+      "path": "/images/forest-transition-front.png",
+      "scene": "Despertar",
+      "role": "Folhagem frontal que encobre o título durante o scroll",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-01",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Folhagem frontal fotorealista da Amazônia em panorama 16:9, folhas largas, samambaias e galhos com contorno superior orgânico, verdes profundos e luz de amanhecer, fundo RGBA realmente transparente, sem texto, marcas, animais ou paisagem retangular."
+    },
+    {
+      "path": "/images/forest-mist-transition.png",
+      "scene": "Despertar",
+      "role": "Névoa amazônica orgânica que conclui a transição do hero",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-01",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Camada cinematográfica 16:9 de névoa amazônica luminosa entre folhas, samambaias, galhos finos e silhuetas fragmentadas de copa; concentração no terço inferior, contorno superior irregular e grandes áreas transparentes, contraluz difusa de amanhecer, fundo RGBA realmente transparente, sem texto, marcas, pessoas, animais ou bordas retangulares."
+    },
+    {
+      "path": "/images/jaguar/jaguar-eyes-amazon.png",
+      "scene": "Olhos",
+      "role": "Retrato cinematográfico da onça-pintada oculta sob a copa",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-08",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Fotografia editorial cinematográfica 16:9 de uma onça-pintada adulta, anatomicamente correta, calma e parcialmente oculta na vegetação úmida da floresta amazônica à noite; rosto no lado direito, olhos âmbar com reflexo natural, sombras verde-azuladas, espaço negativo escuro à esquerda, sem texto, marcas, zoológico, agressividade, HDR ou saturação artificial."
+    },
+    {
+      "path": "/images/macaw/canopy-opening-amazon.png",
+      "scene": "Asas",
+      "role": "Copa amazônica luminosa que recebe o voo da arara",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-08",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Fotografia editorial panorâmica 16:9 vista de dentro da floresta amazônica em direção a uma abertura na copa; vegetação úmida e névoa nas bordas, céu marfim difuso e espaço negativo à direita, sem animais, pessoas, texto, arquitetura, HDR ou cores turísticas."
+    },
+    {
+      "path": "/images/macaw/scarlet-macaw-flight.png",
+      "scene": "Asas",
+      "role": "Arara-vermelha isolada para a coreografia de voo",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-08",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Fotografia de uma única arara-vermelha adulta em voo diagonal, com asas abertas, corpo e cauda completos, anatomia e penas realistas, luz natural difusa, cores vermelha, dourada e azul controladas e fundo RGBA genuinamente transparente; sem vegetação, texto, marcas, recortes ou elementos extras."
+    }
+  ]
+}
