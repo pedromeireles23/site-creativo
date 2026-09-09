@@ -7,7 +7,6 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -24,15 +23,9 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
 
   useLayoutEffect(() => {
-    const reduceMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
-    const compactViewport = window.matchMedia(
-      '(max-width: 900px), (pointer: coarse)',
-    ).matches;
+    let disposed = false;
 
-    if (reduceMotion || compactViewport) {
-      let disposed = false;
+    const setupNativeScrolling = () => {
       let refreshFrame: number | undefined;
       let hashFrame: number | undefined;
 
@@ -69,7 +62,6 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       });
 
       return () => {
-        disposed = true;
         window.removeEventListener('hashchange', scheduleHashScroll);
         window.clearTimeout(refreshTimeout);
         window.clearTimeout(settleTimeout);
@@ -80,79 +72,111 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
           window.cancelAnimationFrame(hashFrame);
         }
       };
-    }
-
-    const lenis = new Lenis({
-      autoRaf: false,
-      anchors: true,
-      smoothWheel: true,
-      syncTouch: true,
-      syncTouchLerp: 0.075,
-      touchInertiaExponent: 1.7,
-      touchMultiplier: 1,
-    });
-    const updateScrollTrigger = () => ScrollTrigger.update();
-    const updateLenis = (time: number) => lenis.raf(time * 1000);
-
-    lenis.on('scroll', updateScrollTrigger);
-    gsap.ticker.add(updateLenis);
-    gsap.ticker.lagSmoothing(0);
-
-    let refreshTimeout: number | undefined;
-    let refreshFrame: number | undefined;
-    let destroyed = false;
-
-    const refresh = () => {
-      refreshFrame = undefined;
-      lenis.resize();
-      ScrollTrigger.refresh();
     };
 
-    const scheduleRefresh = () => {
-      window.clearTimeout(refreshTimeout);
-      refreshTimeout = window.setTimeout(() => {
-        if (refreshFrame !== undefined) {
-          window.cancelAnimationFrame(refreshFrame);
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    const compactViewport = window.matchMedia(
+      '(max-width: 900px), (pointer: coarse)',
+    ).matches;
+
+    if (reduceMotion || compactViewport) {
+      const cleanup = setupNativeScrolling();
+
+      return () => {
+        disposed = true;
+        cleanup();
+      };
+    }
+
+    let cleanup: (() => void) | undefined;
+
+    void import('lenis')
+      .then(({ default: Lenis }) => {
+        if (disposed) return;
+
+        const lenis = new Lenis({
+          autoRaf: false,
+          anchors: true,
+          smoothWheel: true,
+          syncTouch: true,
+          syncTouchLerp: 0.075,
+          touchInertiaExponent: 1.7,
+          touchMultiplier: 1,
+        });
+        const updateScrollTrigger = () => ScrollTrigger.update();
+        const updateLenis = (time: number) => lenis.raf(time * 1000);
+
+        lenis.on('scroll', updateScrollTrigger);
+        gsap.ticker.add(updateLenis);
+        gsap.ticker.lagSmoothing(0);
+
+        let refreshTimeout: number | undefined;
+        let refreshFrame: number | undefined;
+
+        const refresh = () => {
+          refreshFrame = undefined;
+          lenis.resize();
+          ScrollTrigger.refresh();
+        };
+
+        const scheduleRefresh = () => {
+          window.clearTimeout(refreshTimeout);
+          refreshTimeout = window.setTimeout(() => {
+            if (refreshFrame !== undefined) {
+              window.cancelAnimationFrame(refreshFrame);
+            }
+
+            refreshFrame = window.requestAnimationFrame(refresh);
+          }, 120);
+        };
+
+        window.addEventListener('resize', scheduleRefresh, { passive: true });
+        window.addEventListener('orientationchange', scheduleRefresh, {
+          passive: true,
+        });
+
+        if (document.readyState === 'complete') {
+          scheduleRefresh();
+        } else {
+          window.addEventListener('load', scheduleRefresh, { once: true });
         }
 
-        refreshFrame = window.requestAnimationFrame(refresh);
-      }, 120);
-    };
+        void document.fonts.ready.then(() => {
+          if (!disposed) scheduleRefresh();
+        });
 
-    window.addEventListener('resize', scheduleRefresh, { passive: true });
-    window.addEventListener('orientationchange', scheduleRefresh, {
-      passive: true,
-    });
+        queueMicrotask(() => {
+          if (!disposed) setIsReady(true);
+        });
 
-    if (document.readyState === 'complete') {
-      scheduleRefresh();
-    } else {
-      window.addEventListener('load', scheduleRefresh, { once: true });
-    }
+        cleanup = () => {
+          window.removeEventListener('load', scheduleRefresh);
+          window.removeEventListener('resize', scheduleRefresh);
+          window.removeEventListener('orientationchange', scheduleRefresh);
+          window.clearTimeout(refreshTimeout);
 
-    void document.fonts.ready.then(() => {
-      if (!destroyed) scheduleRefresh();
-    });
+          if (refreshFrame !== undefined) {
+            window.cancelAnimationFrame(refreshFrame);
+          }
 
-    queueMicrotask(() => {
-      if (!destroyed) setIsReady(true);
-    });
+          lenis.off('scroll', updateScrollTrigger);
+          gsap.ticker.remove(updateLenis);
+          gsap.ticker.lagSmoothing(500, 33);
+          lenis.destroy();
+        };
+      })
+      .catch((error: unknown) => {
+        if (disposed) return;
+
+        console.error('Falha ao iniciar a rolagem suave.', error);
+        cleanup = setupNativeScrolling();
+      });
 
     return () => {
-      destroyed = true;
-      window.removeEventListener('load', scheduleRefresh);
-      window.removeEventListener('resize', scheduleRefresh);
-      window.removeEventListener('orientationchange', scheduleRefresh);
-      window.clearTimeout(refreshTimeout);
-
-      if (refreshFrame !== undefined) {
-        window.cancelAnimationFrame(refreshFrame);
-      }
-
-      lenis.off('scroll', updateScrollTrigger);
-      gsap.ticker.remove(updateLenis);
-      gsap.ticker.lagSmoothing(500, 33);
-      lenis.destroy();
+      disposed = true;
+      cleanup?.();
     };
   }, []);
 
