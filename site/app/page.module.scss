@@ -61,7 +61,6 @@
   object-fit: cover;
   object-position: center 52%;
   filter: saturate(0.88) contrast(1.02) brightness(1.08);
-  will-change: transform;
 }
 
 .heroShade {
@@ -87,7 +86,6 @@
     radial-gradient(ellipse at 72% 38%, rgb(220 231 223 / 26%), transparent 42%);
   filter: blur(30px);
   pointer-events: none;
-  will-change: transform;
 }
 
 .heroExitMist {
@@ -100,7 +98,6 @@
   object-fit: cover;
   object-position: center center;
   pointer-events: none;
-  will-change: transform;
 }
 
 .heroForestMid {
@@ -135,7 +132,6 @@
   );
   transform: rotateX(90deg);
   transform-origin: center bottom;
-  will-change: transform;
 }
 
 .heroTransitionCanvas {
@@ -177,7 +173,6 @@
   display: grid;
   max-width: 17rem;
   gap: 1rem;
-  will-change: opacity, transform;
 
   p {
     margin: 0;
@@ -215,7 +210,6 @@
   letter-spacing: -0.025em;
   transform: scaleX(0.86);
   transform-origin: 50% 100%;
-  will-change: filter, transform;
 }
 
 .scrollCue {
@@ -240,7 +234,6 @@
   letter-spacing: 0.08em;
   cursor: pointer;
   transform-origin: center top;
-  will-change: height, opacity, border-radius, box-shadow;
 
   &:focus-visible {
     outline: 2px solid var(--macaw-gold);
@@ -268,7 +261,6 @@
   object-position: center center;
   filter: saturate(0.8) brightness(0.72) contrast(1.04);
   transform: scale(1.08);
-  will-change: transform;
 }
 
 .scrollCuePreviewShade {
@@ -292,7 +284,6 @@
   height: 1.25rem;
   flex: 0 0 auto;
   place-items: center;
-  will-change: transform;
 
   svg {
     width: 0.85rem;
@@ -446,7 +437,6 @@
   object-fit: cover;
   object-position: center center;
   transform-origin: center center;
-  will-change: transform;
 }
 
 .waterWash {
@@ -497,7 +487,6 @@
   align-self: start;
   width: 100%;
   transform: translateY(clamp(4rem, 9svh, 6rem));
-  will-change: transform;
 }
 
 @keyframes waterIntroBeforeHydration {
@@ -581,7 +570,6 @@
     rgb(0 0 0 / 56%) calc(var(--water-mask-position) + 20%),
     rgb(0 0 0 / 12%) calc(var(--water-mask-position) + 38%)
   );
-  will-change: transform;
 }
 
 .layers {
@@ -819,14 +807,12 @@
 
 .territoryTexture {
   z-index: 1;
-  will-change: clip-path;
 }
 
 .territoryFinalBackgroundImage,
 .territoryTextureImage,
 .territoryOpeningImage {
   object-fit: cover;
-  will-change: transform;
 }
 
 .territoryFinalBackgroundImage {
@@ -849,7 +835,6 @@
 
 .territoryOpening {
   z-index: 2;
-  will-change: clip-path;
 }
 
 .territoryClipDefs {
@@ -886,7 +871,6 @@
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  will-change: opacity, transform;
 
   > span:first-child {
     opacity: 0.58;
@@ -908,7 +892,6 @@
   left: clamp(1.25rem, 5vw, 5rem);
   text-align: center;
   transform: translateY(-48%);
-  will-change: opacity, transform;
 
   > p {
     margin: 0 0 1.5rem;
@@ -950,7 +933,6 @@
   width: max-content;
   align-items: center;
   padding: 0;
-  will-change: transform;
 }
 
 .territoryLeadPanel {
@@ -982,7 +964,6 @@
   background: rgb(31 42 68 / 5%);
   box-shadow: 0 2rem 7rem rgb(3 12 8 / 30%);
   color: var(--ivory-50);
-  will-change: opacity, transform;
 }
 
 .territoryGlassSvg {
@@ -1158,7 +1139,6 @@
   color: var(--ivory-50);
   text-align: center;
   text-shadow: 0 0.15rem 2rem rgb(5 15 11 / 38%);
-  will-change: opacity, transform;
 
   > p:first-child {
     margin: 0 0 1.25rem;
@@ -1260,7 +1240,6 @@
     );
   filter: blur(24px);
   pointer-events: none;
-  will-change: opacity, transform;
 }
 
 .mapCarryover {
@@ -1273,7 +1252,6 @@
   overflow: hidden;
   pointer-events: none;
   transform-origin: 50% 0;
-  will-change: opacity, transform;
 
   span {
     position: absolute;
@@ -1350,7 +1328,6 @@
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  will-change: opacity, transform;
 
   > p {
     margin: 0 0 1.4rem;
@@ -1392,7 +1369,6 @@
   padding: clamp(6rem, 8vw, 8.5rem) clamp(1.5rem, 6vw, 7rem)
     clamp(2rem, 4vw, 4rem);
   opacity: 0;
-  will-change: opacity;
 }
 
 .mapTrailCopy {
@@ -1433,7 +1409,6 @@
   max-width: 100%;
   justify-self: end;
   margin: 0;
-  will-change: transform;
 }
 
 .mapFigure svg {
@@ -1525,7 +1500,6 @@
   position: absolute;
   z-index: 5;
   inset: 0;
-  will-change: transform;
 
   > .jaguar {
     width: 100%;
@@ -1551,7 +1525,6 @@
   object-position: center center;
   filter: saturate(0.84) contrast(1.03) brightness(0.84);
   transform-origin: 72% 36%;
-  will-change: transform;
 }
 
 .jaguarShade,
@@ -1587,7 +1560,6 @@
     radial-gradient(circle at 74% 34%, rgb(9 26 19 / 32%), transparent 20%),
     var(--forest-950);
   opacity: 0.12;
-  will-change: opacity;
 }
 
 .jaguarEyes {
@@ -1601,7 +1573,6 @@
     transparent 72%
   );
   opacity: 0;
-  will-change: opacity;
 }
 
 .jaguarAtmosphere {
@@ -1690,7 +1661,6 @@
 
   [data-jaguar-line] {
     display: block;
-    will-change: transform;
   }
 }
 
@@ -1701,7 +1671,6 @@
   font-size: clamp(13rem, 31vw, 31rem);
   letter-spacing: -0.07em;
   white-space: nowrap;
-  will-change: opacity, transform;
 }
 
 .jaguarFooter {
@@ -1772,7 +1741,6 @@
   object-position: center center;
   filter: saturate(0.72) contrast(0.94) brightness(1.04);
   transform-origin: 58% 42%;
-  will-change: transform;
 }
 
 .macawWash {
@@ -1799,7 +1767,6 @@
   font-size: clamp(15rem, 35vw, 35rem);
   letter-spacing: -0.065em;
   white-space: nowrap;
-  will-change: opacity, transform;
 }
 
 .macawColorTrace {
@@ -1818,7 +1785,6 @@
     width: 100%;
     height: 2px;
     opacity: 0.68;
-    will-change: opacity, transform;
   }
 
   span:nth-child(1) {
@@ -1848,7 +1814,6 @@
   height: 88svh;
   pointer-events: none;
   transform-origin: 54% 54%;
-  will-change: opacity, transform;
 
   img {
     object-fit: contain;
@@ -1872,7 +1837,6 @@
   align-self: center;
   justify-self: end;
   margin-top: 5svh;
-  will-change: opacity, transform;
 
   > p:first-child {
     margin: 0 0 1rem;
@@ -1913,7 +1877,6 @@
 
   [data-macaw-line] {
     display: block;
-    will-change: transform;
   }
 }
 
@@ -1938,7 +1901,6 @@
     border-left: 1px solid rgb(243 240 231 / 12%);
     background: var(--forest-900);
     box-shadow: 0 -1rem 3rem rgb(7 19 15 / 12%);
-    will-change: transform;
   }
 
   > span:nth-child(2n) {
@@ -2001,7 +1963,6 @@
   object-position: center 48%;
   filter: saturate(0.68) contrast(1.04) brightness(0.52);
   transform-origin: 50% 48%;
-  will-change: opacity, transform;
 }
 
 .wholeNight {
@@ -2014,7 +1975,6 @@
     radial-gradient(circle at 68% 34%, transparent 0%, rgb(7 19 15 / 48%) 72%),
     rgb(7 19 15 / 28%);
   pointer-events: none;
-  will-change: opacity;
 }
 
 .wholePulse {
@@ -2035,7 +1995,6 @@
     stroke-dashoffset: 1;
     vector-effect: non-scaling-stroke;
     opacity: 0.58;
-    will-change: opacity, stroke-dashoffset;
   }
 }
 
@@ -2051,7 +2010,6 @@
 
 .wholeCopy {
   align-self: end;
-  will-change: opacity, transform;
 
   > p {
     margin: 0 0 clamp(1rem, 2vh, 1.5rem);
@@ -2093,7 +2051,6 @@
 
   [data-whole-line] {
     display: block;
-    will-change: transform;
   }
 }
 
@@ -2147,7 +2104,6 @@
     border-radius: 50%;
     background: var(--mist-100);
     box-shadow: 0 0 0.9rem rgb(143 185 180 / 70%);
-    will-change: opacity, transform;
   }
 }
 
@@ -2171,7 +2127,6 @@
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.24em;
-    will-change: opacity, transform;
   }
 
   h2 {
@@ -2182,7 +2137,6 @@
     font-weight: 400;
     line-height: 0.9;
     letter-spacing: -0.035em;
-    will-change: opacity, transform;
   }
 }
 
@@ -2196,7 +2150,6 @@
     rgb(220 231 223 / 60%),
     transparent
   );
-  will-change: transform;
 }
 
 @media (max-width: 900px) {
@@ -2238,7 +2191,6 @@
     filter: blur(16px);
     opacity: 0;
     pointer-events: none;
-    will-change: opacity, transform;
   }
 
   .grid {
@@ -2460,7 +2412,6 @@
       linear-gradient(0deg, var(--ivory-50) 0%, transparent 86%);
     filter: blur(17px);
     pointer-events: none;
-    will-change: opacity, transform;
   }
 
   .territoryCards {

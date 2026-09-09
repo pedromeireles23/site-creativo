@@ -2,13 +2,10 @@
 
 import Image from 'next/image';
 import { type CSSProperties, useRef } from 'react';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 const canopyImage = '/images/macaw/canopy-opening-amazon.png';
 const macawImage = '/images/macaw/scarlet-macaw-flight.png';
@@ -16,6 +13,7 @@ const macawImage = '/images/macaw/scarlet-macaw-flight.png';
 export function MacawSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const isSmoothScrollReady = useSmoothScrollReady();
+  const reduceMotion = useMotionProfile() === 'reduced';
 
   useGSAP(
     () => {
@@ -50,7 +48,7 @@ export function MacawSection() {
 
       if (!stage || !background || !bird || !ghost || !copy) return;
 
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (reduceMotion) {
         return;
       }
 
@@ -183,12 +181,12 @@ export function MacawSection() {
         return () => timeline.kill();
       });
 
-      window.requestAnimationFrame(() => ScrollTrigger.refresh());
+      scheduleScrollRefresh();
       return () => media.revert();
     },
     {
       scope: sectionRef,
-      dependencies: [isSmoothScrollReady],
+      dependencies: [isSmoothScrollReady, reduceMotion],
       revertOnUpdate: true,
     },
   );

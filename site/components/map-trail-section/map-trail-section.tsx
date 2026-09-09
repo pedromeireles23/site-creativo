@@ -2,13 +2,10 @@
 
 import Image from 'next/image';
 import { type ReactNode, useId, useRef } from 'react';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 const contourPaths = [
   'M80 430 C122 315 224 250 330 272 C422 291 475 245 538 174 C589 117 661 139 687 225',
@@ -23,6 +20,7 @@ const contourPaths = [
 export function MapTrailSection({ children }: { children: ReactNode }) {
   const sectionRef = useRef<HTMLElement>(null);
   const isSmoothScrollReady = useSmoothScrollReady();
+  const reduceMotion = useMotionProfile() === 'reduced';
   const clipId = 'map-trail-' + useId().replaceAll(':', '');
 
   useGSAP(
@@ -96,7 +94,7 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
         strokeDashoffset: trailLength,
       });
 
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (reduceMotion) {
         gsap.set(trail, { strokeDashoffset: 0 });
         return;
       }
@@ -307,12 +305,12 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
         };
       });
 
-      window.requestAnimationFrame(() => ScrollTrigger.refresh());
+      scheduleScrollRefresh();
       return () => media.revert();
     },
     {
       scope: sectionRef,
-      dependencies: [isSmoothScrollReady],
+      dependencies: [isSmoothScrollReady, reduceMotion],
       revertOnUpdate: true,
     },
   );

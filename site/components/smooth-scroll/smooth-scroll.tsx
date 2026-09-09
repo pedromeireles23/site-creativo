@@ -1,32 +1,68 @@
 'use client';
 
 import {
+  useCallback,
   createContext,
   useContext,
   useLayoutEffect,
+  useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { gsap, scheduleScrollRefresh, ScrollTrigger } from '@/lib/gsap';
 
-gsap.registerPlugin(ScrollTrigger);
-ScrollTrigger.config({ ignoreMobileResize: true });
+type SmoothScrollController = {
+  start: () => void;
+  stop: () => void;
+};
 
-const SmoothScrollReadyContext = createContext(true);
+type SmoothScrollContextValue = {
+  isReady: boolean;
+  pause: () => void;
+  resume: () => void;
+};
+
+const SmoothScrollContext = createContext<SmoothScrollContextValue>({
+  isReady: true,
+  pause: () => undefined,
+  resume: () => undefined,
+});
 
 export function useSmoothScrollReady() {
-  return useContext(SmoothScrollReadyContext);
+  return useContext(SmoothScrollContext).isReady;
+}
+
+export function useSmoothScrollControls() {
+  return useContext(SmoothScrollContext);
 }
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
+  const motionProfile = useMotionProfile();
+  const controllerRef = useRef<SmoothScrollController | null>(null);
+  const pauseRequestedRef = useRef(false);
+
+  const pause = useCallback(() => {
+    pauseRequestedRef.current = true;
+    controllerRef.current?.stop();
+  }, []);
+
+  const resume = useCallback(() => {
+    pauseRequestedRef.current = false;
+    controllerRef.current?.start();
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({ isReady, pause, resume }),
+    [isReady, pause, resume],
+  );
 
   useLayoutEffect(() => {
     let disposed = false;
 
     const setupNativeScrolling = () => {
-      let refreshFrame: number | undefined;
       let hashFrame: number | undefined;
 
       const scrollToHash = () => {
@@ -48,10 +84,8 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       };
 
       const refreshTimeout = window.setTimeout(() => {
-        refreshFrame = window.requestAnimationFrame(() => {
-          ScrollTrigger.refresh();
-          scheduleHashScroll();
-        });
+        scheduleScrollRefresh();
+        scheduleHashScroll();
       }, 180);
       const settleTimeout = window.setTimeout(scheduleHashScroll, 720);
 
@@ -65,23 +99,13 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         window.removeEventListener('hashchange', scheduleHashScroll);
         window.clearTimeout(refreshTimeout);
         window.clearTimeout(settleTimeout);
-        if (refreshFrame !== undefined) {
-          window.cancelAnimationFrame(refreshFrame);
-        }
         if (hashFrame !== undefined) {
           window.cancelAnimationFrame(hashFrame);
         }
       };
     };
 
-    const reduceMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
-    const compactViewport = window.matchMedia(
-      '(max-width: 900px), (pointer: coarse)',
-    ).matches;
-
-    if (reduceMotion || compactViewport) {
+    if (motionProfile !== 'full') {
       const cleanup = setupNativeScrolling();
 
       return () => {
@@ -108,30 +132,42 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         const updateScrollTrigger = () => ScrollTrigger.update();
         const updateLenis = (time: number) => lenis.raf(time * 1000);
 
+        controllerRef.current = lenis;
+        if (pauseRequestedRef.current) lenis.stop();
+
         lenis.on('scroll', updateScrollTrigger);
-        gsap.ticker.add(updateLenis);
         gsap.ticker.lagSmoothing(0);
 
         let refreshTimeout: number | undefined;
-        let refreshFrame: number | undefined;
+        let tickerActive = false;
 
-        const refresh = () => {
-          refreshFrame = undefined;
-          lenis.resize();
-          ScrollTrigger.refresh();
+        const setTickerActive = (active: boolean) => {
+          if (tickerActive === active) return;
+          tickerActive = active;
+
+          if (active) gsap.ticker.add(updateLenis);
+          else gsap.ticker.remove(updateLenis);
+        };
+
+        const handleVisibilityChange = () => {
+          setTickerActive(!document.hidden);
+
+          if (!document.hidden) {
+            lenis.resize();
+            scheduleScrollRefresh();
+          }
         };
 
         const scheduleRefresh = () => {
           window.clearTimeout(refreshTimeout);
           refreshTimeout = window.setTimeout(() => {
-            if (refreshFrame !== undefined) {
-              window.cancelAnimationFrame(refreshFrame);
-            }
-
-            refreshFrame = window.requestAnimationFrame(refresh);
+            lenis.resize();
+            scheduleScrollRefresh();
           }, 120);
         };
 
+        setTickerActive(!document.hidden);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('resize', scheduleRefresh, { passive: true });
         window.addEventListener('orientationchange', scheduleRefresh, {
           passive: true,
@@ -152,18 +188,19 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         });
 
         cleanup = () => {
+          document.removeEventListener(
+            'visibilitychange',
+            handleVisibilityChange,
+          );
           window.removeEventListener('load', scheduleRefresh);
           window.removeEventListener('resize', scheduleRefresh);
           window.removeEventListener('orientationchange', scheduleRefresh);
           window.clearTimeout(refreshTimeout);
 
-          if (refreshFrame !== undefined) {
-            window.cancelAnimationFrame(refreshFrame);
-          }
-
           lenis.off('scroll', updateScrollTrigger);
-          gsap.ticker.remove(updateLenis);
+          setTickerActive(false);
           gsap.ticker.lagSmoothing(500, 33);
+          if (controllerRef.current === lenis) controllerRef.current = null;
           lenis.destroy();
         };
       })
@@ -178,11 +215,11 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       disposed = true;
       cleanup?.();
     };
-  }, []);
+  }, [motionProfile]);
 
   return (
-    <SmoothScrollReadyContext.Provider value={isReady}>
+    <SmoothScrollContext.Provider value={contextValue}>
       {children}
-    </SmoothScrollReadyContext.Provider>
+    </SmoothScrollContext.Provider>
   );
 }

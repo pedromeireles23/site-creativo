@@ -2,13 +2,10 @@
 
 import { useId, useRef } from 'react';
 import Image from 'next/image';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 const territories = [
   {
@@ -38,6 +35,7 @@ export function TerritoriesSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const revealId = `territory-reveal-${useId().replaceAll(':', '')}`;
   const isSmoothScrollReady = useSmoothScrollReady();
+  const reduceMotion = useMotionProfile() === 'reduced';
 
   useGSAP(
     () => {
@@ -104,7 +102,7 @@ export function TerritoriesSection() {
         return;
       }
 
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (reduceMotion) {
         return;
       }
 
@@ -346,12 +344,12 @@ export function TerritoriesSection() {
         };
       });
 
-      window.requestAnimationFrame(() => ScrollTrigger.refresh());
+      scheduleScrollRefresh();
       return () => media.revert();
     },
     {
       scope: sectionRef,
-      dependencies: [isSmoothScrollReady],
+      dependencies: [isSmoothScrollReady, reduceMotion],
       revertOnUpdate: true,
     },
   );

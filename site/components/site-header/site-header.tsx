@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import gsap from 'gsap';
+import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { gsap } from '@/lib/gsap';
 import { chapters, menuGroups, type MenuKey } from './site-menu-data';
 import styles from './site-header.module.scss';
 
@@ -28,6 +29,7 @@ export function SiteHeader() {
   const [activeMenu, setActiveMenu] = useState<MenuKey>('index');
   const [headerTheme, setHeaderTheme] = useState<HeaderTheme>('dark');
   const [currentChapter, setCurrentChapter] = useState('despertar');
+  const motionProfile = useMotionProfile();
 
   const openMenu = (menu: MenuKey, trigger: HTMLElement) => {
     lastTriggerRef.current = trigger;
@@ -45,9 +47,7 @@ export function SiteHeader() {
     const header = headerRef.current;
     if (!header) return;
 
-    const reduceMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
+    const reduceMotion = motionProfile === 'reduced';
     let lastY = window.scrollY;
     let headerVisible = true;
     let ticking = false;
@@ -124,7 +124,7 @@ export function SiteHeader() {
       window.removeEventListener('resize', updateTheme);
       gsap.killTweensOf(header);
     };
-  }, [menuOpen]);
+  }, [menuOpen, motionProfile]);
 
   return (
     <>

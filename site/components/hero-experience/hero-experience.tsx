@@ -2,18 +2,21 @@
 
 import { useRef } from 'react';
 import Image from 'next/image';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+import { useMotionProfile } from '@/hooks/use-motion-profile';
+import {
+  gsap,
+  scheduleScrollRefresh,
+  ScrollTrigger,
+  useGSAP,
+} from '@/lib/gsap';
 
 export function HeroExperience() {
   const heroRef = useRef<HTMLElement>(null);
   const breathRef = useRef<HTMLElement>(null);
   const isSmoothScrollReady = useSmoothScrollReady();
+  const reduceMotion = useMotionProfile() === 'reduced';
 
   useGSAP(
     () => {
@@ -80,9 +83,6 @@ export function HeroExperience() {
         return;
       }
 
-      const reduceMotion = window.matchMedia(
-        '(prefers-reduced-motion: reduce)',
-      ).matches;
       const canHover = window.matchMedia(
         '(hover: hover) and (pointer: fine)',
       ).matches;
@@ -185,6 +185,7 @@ export function HeroExperience() {
           if (reduce) return;
 
           if (compact) {
+            gsap.set(intro, { xPercent: -50 });
             gsap.set(title, {
               xPercent: -50,
               scaleX: 0.82,
@@ -349,6 +350,7 @@ export function HeroExperience() {
             };
           }
 
+          gsap.set(intro, { xPercent: 0 });
           gsap.set(title, {
             xPercent: 0,
             scaleX: 0.86,
@@ -447,7 +449,7 @@ export function HeroExperience() {
         },
       );
 
-      window.requestAnimationFrame(() => ScrollTrigger.refresh());
+      scheduleScrollRefresh();
       return () => {
         if (canHover) {
           cue.removeEventListener('pointerenter', expandCue);
@@ -461,7 +463,7 @@ export function HeroExperience() {
     },
     {
       scope: heroRef,
-      dependencies: [isSmoothScrollReady],
+      dependencies: [isSmoothScrollReady, reduceMotion],
       revertOnUpdate: true,
     },
   );

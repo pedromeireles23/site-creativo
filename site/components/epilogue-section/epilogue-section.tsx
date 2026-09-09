@@ -2,13 +2,10 @@
 
 import Image from 'next/image';
 import { type CSSProperties, useRef } from 'react';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 const panoramaImage = '/images/territorios/territorios-transicao-final.png';
 
@@ -34,6 +31,7 @@ type MoistureStyle = CSSProperties & {
 export function EpilogueSection() {
   const rootRef = useRef<HTMLDivElement>(null);
   const isSmoothScrollReady = useSmoothScrollReady();
+  const reduceMotion = useMotionProfile() === 'reduced';
 
   useGSAP(
     () => {
@@ -88,7 +86,7 @@ export function EpilogueSection() {
         return;
       }
 
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (reduceMotion) {
         return;
       }
 
@@ -275,18 +273,13 @@ export function EpilogueSection() {
       media.add('(min-width: 901px)', () => buildTimelines(2, false));
       media.add('(max-width: 900px)', buildCompactTimelines);
 
-      const refreshFrame = window.requestAnimationFrame(() =>
-        ScrollTrigger.refresh(),
-      );
+      scheduleScrollRefresh();
 
-      return () => {
-        window.cancelAnimationFrame(refreshFrame);
-        media.revert();
-      };
+      return () => media.revert();
     },
     {
       scope: rootRef,
-      dependencies: [isSmoothScrollReady],
+      dependencies: [isSmoothScrollReady, reduceMotion],
       revertOnUpdate: true,
     },
   );

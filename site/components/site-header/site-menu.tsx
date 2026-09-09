@@ -1,13 +1,12 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
+import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { gsap, useGSAP } from '@/lib/gsap';
+import { useSmoothScrollControls } from '@/components/smooth-scroll/smooth-scroll';
 import { chapters, menuGroups, type MenuKey } from './site-menu-data';
 import styles from './site-header.module.scss';
-
-gsap.registerPlugin(useGSAP);
 
 type SiteMenuProps = {
   activeMenu: MenuKey;
@@ -25,6 +24,15 @@ export function SiteMenu({
   open,
 }: SiteMenuProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const motionProfile = useMotionProfile();
+  const { pause, resume } = useSmoothScrollControls();
+
+  useEffect(() => {
+    if (!open) return;
+
+    pause();
+    return resume;
+  }, [open, pause, resume]);
 
   useGSAP(
     () => {
@@ -33,10 +41,18 @@ export function SiteMenu({
       gsap.fromTo(
         panelRef.current,
         { xPercent: -102 },
-        { xPercent: 0, duration: 0.72, ease: 'power4.out' },
+        {
+          xPercent: 0,
+          duration: motionProfile === 'reduced' ? 0 : 0.72,
+          ease: 'power4.out',
+        },
       );
     },
-    { dependencies: [open], scope: panelRef, revertOnUpdate: true },
+    {
+      dependencies: [motionProfile, open],
+      scope: panelRef,
+      revertOnUpdate: true,
+    },
   );
 
   useGSAP(
@@ -50,14 +66,14 @@ export function SiteMenu({
         {
           autoAlpha: 1,
           y: 0,
-          duration: 0.42,
+          duration: motionProfile === 'reduced' ? 0 : 0.42,
           stagger: 0.045,
           ease: 'power2.out',
         },
       );
     },
     {
-      dependencies: [activeMenu, open],
+      dependencies: [activeMenu, motionProfile, open],
       scope: panelRef,
       revertOnUpdate: true,
     },

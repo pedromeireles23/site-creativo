@@ -2,13 +2,9 @@
 
 import { useRef } from 'react';
 import Image, { getImageProps } from 'next/image';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 export function VeinsSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -167,7 +163,7 @@ export function VeinsSection() {
         },
       );
 
-      window.requestAnimationFrame(() => ScrollTrigger.refresh());
+      scheduleScrollRefresh();
       return () => media.revert();
     },
     {
