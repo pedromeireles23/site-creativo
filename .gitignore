@@ -35,3 +35,4 @@
 # Local project documentation
 **/*.md
 !/README.md
+!/docs/11-auditoria-motion-mobile.md

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { type CSSProperties, useRef } from 'react';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { MOTION_QUERIES, useMotionProfile } from '@/hooks/use-motion-profile';
 import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 const panoramaImage = '/images/territorios/territorios-transicao-final.png';
@@ -40,6 +40,9 @@ export function EpilogueSection() {
       const root = rootRef.current;
       if (!root) return;
 
+      const epilogueStage = root.querySelector<HTMLElement>(
+        '[data-epilogue-stage]',
+      );
       const whole = root.querySelector<HTMLElement>('[data-whole]');
       const panorama = root.querySelector<HTMLElement>('[data-whole-panorama]');
       const night = root.querySelector<HTMLElement>('[data-whole-night]');
@@ -54,6 +57,9 @@ export function EpilogueSection() {
       const wholeCopy = root.querySelector<HTMLElement>('[data-whole-copy]');
       const pulse = root.querySelector<SVGPathElement>('[data-whole-pulse]');
       const signature = root.querySelector<HTMLElement>('[data-signature]');
+      const signatureEdge = root.querySelector<HTMLElement>(
+        '[data-signature-transition-edge]',
+      );
       const signatureMeta = root.querySelector<HTMLElement>(
         '[data-signature-meta]',
       );
@@ -72,12 +78,14 @@ export function EpilogueSection() {
       );
 
       if (
+        !epilogueStage ||
         !whole ||
         !panorama ||
         !night ||
         !wholeCopy ||
         !pulse ||
         !signature ||
+        !signatureEdge ||
         !signatureMeta ||
         !signatureRule ||
         !signatureBrand ||
@@ -92,11 +100,143 @@ export function EpilogueSection() {
 
       const media = gsap.matchMedia();
 
-      const buildTimelines = (scrollDistance: number, compact: boolean) => {
+      const buildCompactCinematicTimeline = () => {
+        const signatureFeather = { value: 16 };
+
+        whole.dataset.scrollAnchorProgress = '0.36';
         gsap.set(panorama, {
           autoAlpha: 1,
-          scale: compact ? 1.045 : 1.075,
+          scale: 1,
         });
+        gsap.set(night, { opacity: 0 });
+        gsap.set(wholeLines, { yPercent: 118 });
+        gsap.set(wholeMeta, { autoAlpha: 0, y: 16 });
+        gsap.set(pulse, { strokeDashoffset: 1 });
+        gsap.set(signature, { yPercent: 100 });
+        signature.style.setProperty('--signature-entry-feather', '16svh');
+        gsap.set(signatureEdge, { autoAlpha: 0, yPercent: 34 });
+        gsap.set(signatureMeta, { autoAlpha: 0, y: 14 });
+        gsap.set(signatureRule, {
+          scaleX: 0,
+          transformOrigin: '50% 50%',
+        });
+        gsap.set(signatureBrand, { autoAlpha: 0, y: 16 });
+        gsap.set(signatureName, {
+          autoAlpha: 0,
+          y: 30,
+          scale: 0.98,
+        });
+        gsap.set(specks, {
+          autoAlpha: 0,
+          y: (index) => (index % 2 === 0 ? 18 : -14),
+        });
+
+        const timeline = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: epilogueStage,
+            start: 'top top',
+            end: () => '+=' + window.innerHeight * 2.1,
+            pin: epilogueStage,
+            scrub: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              whole.dataset.headerChapter =
+                self.progress >= 0.58 ? 'silencio' : 'inteiro';
+            },
+          },
+        });
+
+        timeline
+          .to(panorama, { scale: 1.035, duration: 0.72 }, 0)
+          .to(
+            wholeMeta,
+            {
+              autoAlpha: 1,
+              y: 0,
+              stagger: 0.035,
+              duration: 0.13,
+            },
+            0.13,
+          )
+          .to(
+            wholeLines,
+            {
+              yPercent: 0,
+              stagger: 0.055,
+              duration: 0.18,
+            },
+            0.18,
+          )
+          .to(pulse, { strokeDashoffset: 0, duration: 0.3 }, 0.2)
+          .to(night, { opacity: 0.72, duration: 0.72 }, 0)
+          .to(
+            wholeCopy,
+            {
+              autoAlpha: 0,
+              y: -18,
+              duration: 0.14,
+            },
+            0.76,
+          )
+          .to(wholeMeta, { autoAlpha: 0, y: -10, duration: 0.12 }, 0.77)
+          .to(pulse, { opacity: 0, duration: 0.12 }, 0.77)
+          .to(night, { opacity: 0.9, duration: 0.18 }, 0.75)
+          .to(
+            signatureFeather,
+            {
+              value: 0,
+              duration: 0.42,
+              onUpdate: () => {
+                signature.style.setProperty(
+                  '--signature-entry-feather',
+                  `${signatureFeather.value}svh`,
+                );
+              },
+            },
+            0.9,
+          )
+          .to(signature, { yPercent: 0, duration: 0.42 }, 0.9)
+          .to(
+            signatureEdge,
+            { autoAlpha: 0.92, yPercent: 0, duration: 0.17 },
+            0.9,
+          )
+          .to(
+            signatureEdge,
+            { autoAlpha: 0, yPercent: -42, duration: 0.27 },
+            1.06,
+          )
+          .to(
+            specks,
+            {
+              autoAlpha: (index) => (index % 3 === 0 ? 0.62 : 0.36),
+              y: 0,
+              stagger: { each: 0.025, from: 'random' },
+              duration: 0.32,
+            },
+            1.03,
+          )
+          .to(signatureMeta, { autoAlpha: 1, y: 0, duration: 0.18 }, 1.1)
+          .to(signatureRule, { scaleX: 1, duration: 0.24 }, 1.2)
+          .to(signatureBrand, { autoAlpha: 1, y: 0, duration: 0.2 }, 1.28)
+          .to(
+            signatureName,
+            { autoAlpha: 1, y: 0, scale: 1, duration: 0.42 },
+            1.34,
+          )
+          .to({}, { duration: 0.3 }, 1.62);
+
+        return () => {
+          timeline.kill();
+          whole.dataset.scrollAnchorProgress = '0.5';
+          signature.style.removeProperty('--signature-entry-feather');
+        };
+      };
+
+      const buildWideTimelines = () => {
+        gsap.set(panorama, { autoAlpha: 1, scale: 1.075 });
         gsap.set(night, { opacity: 0.34 });
         gsap.set(wholeLines, { yPercent: 118 });
         gsap.set(wholeMeta, { autoAlpha: 0, y: 16 });
@@ -107,7 +247,7 @@ export function EpilogueSection() {
           scrollTrigger: {
             trigger: whole,
             start: 'top top',
-            end: () => '+=' + window.innerHeight * scrollDistance,
+            end: () => '+=' + window.innerHeight * 2,
             pin: whole,
             scrub: true,
             anticipatePin: 1,
@@ -138,30 +278,20 @@ export function EpilogueSection() {
           )
           .to(pulse, { strokeDashoffset: 0, duration: 0.3 }, 0.2)
           .to(night, { opacity: 0.72, duration: 0.72 }, 0)
-          .to(
-            wholeCopy,
-            {
-              autoAlpha: 0,
-              y: compact ? -18 : -30,
-              duration: 0.12,
-            },
-            0.84,
-          )
+          .to(wholeCopy, { autoAlpha: 0, y: -30, duration: 0.12 }, 0.84)
           .to(wholeMeta, { autoAlpha: 0, y: -10, duration: 0.1 }, 0.85)
           .to(pulse, { opacity: 0, duration: 0.1 }, 0.85)
           .to(night, { opacity: 0.9, duration: 0.16 }, 0.82);
 
+        gsap.set(signature, { yPercent: 0 });
+        gsap.set(signatureEdge, { autoAlpha: 0, yPercent: 0 });
         gsap.set(signatureMeta, { autoAlpha: 0, y: 14 });
         gsap.set(signatureRule, {
           scaleX: 0,
           transformOrigin: '50% 50%',
         });
         gsap.set(signatureBrand, { autoAlpha: 0, y: 16 });
-        gsap.set(signatureName, {
-          autoAlpha: 0,
-          y: compact ? 30 : 48,
-          scale: compact ? 0.98 : 0.965,
-        });
+        gsap.set(signatureName, { autoAlpha: 0, y: 48, scale: 0.965 });
         gsap.set(specks, {
           autoAlpha: 0,
           y: (index) => (index % 2 === 0 ? 18 : -14),
@@ -270,8 +400,9 @@ export function EpilogueSection() {
         };
       };
 
-      media.add('(min-width: 901px)', () => buildTimelines(2, false));
-      media.add('(max-width: 900px)', buildCompactTimelines);
+      media.add(MOTION_QUERIES.wide, buildWideTimelines);
+      media.add(MOTION_QUERIES.compactCinematic, buildCompactCinematicTimeline);
+      media.add(MOTION_QUERIES.shortLandscape, buildCompactTimelines);
 
       scheduleScrollRefresh();
 
@@ -286,124 +417,134 @@ export function EpilogueSection() {
 
   return (
     <div className={styles.epilogueSequence} ref={rootRef}>
-      <section
-        className={styles.whole}
-        id="inteiro"
-        aria-labelledby="inteiro-title"
-        data-header-theme="dark"
-        data-header-chapter="inteiro"
-        data-whole
-      >
-        <div className={styles.wholeStage}>
-          <div className={styles.wholePanoramaFrame}>
-            <Image
-              className={styles.wholePanorama}
-              data-whole-panorama
-              src={panoramaImage}
-              alt="A floresta amazônica inteira entre a copa e a névoa"
-              fill
-              sizes="100vw"
+      <div className={styles.epilogueStage} data-epilogue-stage>
+        <section
+          className={styles.whole}
+          id="inteiro"
+          aria-labelledby="inteiro-title"
+          data-header-theme="dark"
+          data-header-chapter="inteiro"
+          data-scroll-anchor-progress="0.5"
+          data-whole
+        >
+          <div className={styles.wholeStage}>
+            <div className={styles.wholePanoramaFrame}>
+              <Image
+                className={styles.wholePanorama}
+                data-whole-panorama
+                src={panoramaImage}
+                alt="A floresta amazônica inteira entre a copa e a névoa"
+                fill
+                sizes="100vw"
+              />
+            </div>
+
+            <div
+              className={styles.wholeNight}
+              data-whole-night
+              aria-hidden="true"
             />
-          </div>
 
-          <div
-            className={styles.wholeNight}
-            data-whole-night
-            aria-hidden="true"
-          />
+            <svg
+              className={styles.wholePulse}
+              viewBox="0 0 1200 180"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                data-whole-pulse
+                pathLength="1"
+                d="M0 112 C118 70 202 142 326 91 C450 39 527 129 650 82 C786 30 867 115 980 68 C1060 34 1128 54 1200 31"
+              />
+            </svg>
 
-          <svg
-            className={styles.wholePulse}
-            viewBox="0 0 1200 180"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <path
-              data-whole-pulse
-              pathLength="1"
-              d="M0 112 C118 70 202 142 326 91 C450 39 527 129 650 82 C786 30 867 115 980 68 C1060 34 1128 54 1200 31"
-            />
-          </svg>
+            <div className={styles.wholeContent}>
+              <p className={styles.chapterLabel} data-whole-meta>
+                <span>08</span>
+                <span aria-hidden="true" className={styles.chapterLine} />
+                Inteiro
+              </p>
 
-          <div className={styles.wholeContent}>
-            <p className={styles.chapterLabel} data-whole-meta>
-              <span>08</span>
-              <span aria-hidden="true" className={styles.chapterLine} />
-              Inteiro
-            </p>
-
-            <div className={styles.wholeCopy} data-whole-copy>
-              <p data-whole-meta>Um só corpo · em movimento</p>
-              <h2 id="inteiro-title">
-                <span className={styles.wholeLineClip}>
-                  <span data-whole-line>Água. Raiz. Pelo.</span>
-                </span>
-                <span className={styles.wholeLineClip}>
-                  <span data-whole-line>Pena. Luz.</span>
-                </span>
-                <span className={styles.wholeLineClip}>
-                  <em data-whole-line>Tudo pulsa ao mesmo tempo.</em>
-                </span>
-              </h2>
+              <div className={styles.wholeCopy} data-whole-copy>
+                <p data-whole-meta>Um só corpo · em movimento</p>
+                <h2 id="inteiro-title">
+                  <span className={styles.wholeLineClip}>
+                    <span data-whole-line>Água. Raiz. Pelo.</span>
+                  </span>
+                  <span className={styles.wholeLineClip}>
+                    <span data-whole-line>Pena. Luz.</span>
+                  </span>
+                  <span className={styles.wholeLineClip}>
+                    <em data-whole-line>Tudo pulsa ao mesmo tempo.</em>
+                  </span>
+                </h2>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section
-        className={`${styles.section} ${styles.signature}`}
-        id="silencio"
-        aria-labelledby="silencio-title"
-        data-header-theme="dark"
-        data-header-chapter="silencio"
-        data-signature
-      >
-        <Image
-          className={styles.signatureBackground}
-          src={panoramaImage}
-          alt=""
-          fill
-          sizes="100vw"
-        />
-        <div className={styles.signatureVeil} aria-hidden="true" />
-
-        <div className={styles.signatureSpecks} aria-hidden="true">
-          {moisture.map((speck, index) => (
-            <span
-              data-signature-speck
-              key={`${speck.x}-${speck.y}-${index}`}
-              style={
-                {
-                  '--speck-x': `${speck.x}%`,
-                  '--speck-y': `${speck.y}%`,
-                  '--speck-size': `${speck.size}px`,
-                } as MoistureStyle
-              }
-            />
-          ))}
-        </div>
-
-        <p
-          className={`${styles.chapterLabel} ${styles.signatureChapter}`}
-          data-signature-meta
+        <section
+          className={`${styles.section} ${styles.signature}`}
+          id="silencio"
+          aria-labelledby="silencio-title"
+          data-header-theme="dark"
+          data-header-chapter="silencio"
+          data-scroll-anchor-progress="0.9"
+          data-signature
         >
-          <span>09</span>
-          <span aria-hidden="true" className={styles.chapterLine} />
-          Silêncio
-        </p>
-
-        <div className={styles.signatureInner}>
-          <span
-            className={styles.signatureRule}
-            data-signature-rule
+          <div
+            className={styles.signatureTransitionEdge}
+            data-signature-transition-edge
             aria-hidden="true"
           />
-          <p data-signature-brand>Floresta Viva</p>
-          <h2 id="silencio-title" data-signature-name>
-            Pedro Meireles
-          </h2>
-        </div>
-      </section>
+
+          <Image
+            className={styles.signatureBackground}
+            src={panoramaImage}
+            alt=""
+            fill
+            sizes="100vw"
+          />
+          <div className={styles.signatureVeil} aria-hidden="true" />
+
+          <div className={styles.signatureSpecks} aria-hidden="true">
+            {moisture.map((speck, index) => (
+              <span
+                data-signature-speck
+                key={`${speck.x}-${speck.y}-${index}`}
+                style={
+                  {
+                    '--speck-x': `${speck.x}%`,
+                    '--speck-y': `${speck.y}%`,
+                    '--speck-size': `${speck.size}px`,
+                  } as MoistureStyle
+                }
+              />
+            ))}
+          </div>
+
+          <p
+            className={`${styles.chapterLabel} ${styles.signatureChapter}`}
+            data-signature-meta
+          >
+            <span>09</span>
+            <span aria-hidden="true" className={styles.chapterLine} />
+            Silêncio
+          </p>
+
+          <div className={styles.signatureInner}>
+            <span
+              className={styles.signatureRule}
+              data-signature-rule
+              aria-hidden="true"
+            />
+            <p data-signature-brand>Floresta Viva</p>
+            <h2 id="silencio-title" data-signature-name>
+              Pedro Meireles
+            </h2>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

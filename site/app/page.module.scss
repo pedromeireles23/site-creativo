@@ -57,10 +57,15 @@
 }
 
 .heroImage {
+  position: absolute;
   z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   object-position: center 52%;
   filter: saturate(0.88) contrast(1.02) brightness(1.08);
+  pointer-events: none;
 }
 
 .heroShade {
@@ -1663,6 +1668,8 @@
 
 .jaguarLineClip {
   display: block;
+  width: calc(100% + 1em);
+  padding-inline-end: 1em;
   overflow: hidden;
 
   [data-jaguar-line] {
@@ -1725,6 +1732,10 @@
   padding: 0;
   background: var(--forest-900);
   color: var(--ink-900);
+}
+
+.macawTransitionEdge {
+  display: none;
 }
 
 .macawStage {
@@ -1926,7 +1937,7 @@
   left: calc(var(--strip-index) * -100%) !important;
   width: calc(var(--strip-count) * 100%) !important;
   max-width: none !important;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   filter: saturate(0.76) brightness(0.64);
   opacity: 0.56;
@@ -1937,6 +1948,10 @@
   z-index: 65;
   margin-top: -100svh;
   background: var(--forest-950);
+}
+
+.epilogueStage {
+  position: relative;
 }
 
 .whole {
@@ -2076,6 +2091,32 @@
   isolation: isolate;
 }
 
+.signatureTransitionEdge {
+  position: absolute;
+  z-index: 6;
+  top: -15svh;
+  right: -12vw;
+  left: -12vw;
+  display: none;
+  height: 24svh;
+  background:
+    radial-gradient(
+      ellipse at 22% 74%,
+      rgb(220 231 223 / 42%) 0%,
+      rgb(143 185 180 / 22%) 34%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse at 78% 72%,
+      rgb(220 231 223 / 34%) 0%,
+      rgb(73 106 80 / 18%) 38%,
+      transparent 73%
+    ),
+    linear-gradient(180deg, transparent 0%, rgb(7 19 15 / 72%) 100%);
+  filter: blur(12px);
+  pointer-events: none;
+}
+
 .signatureBackground {
   z-index: 0;
   object-fit: cover;
@@ -2161,7 +2202,7 @@
   );
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .heroSequence {
     min-height: 180svh;
   }
@@ -2172,7 +2213,26 @@
   }
 
   .heroTransitionBridge {
-    display: none;
+    display: block;
+  }
+
+  .heroTransitionPlane {
+    background: linear-gradient(
+      180deg,
+      rgb(243 240 231 / 0%) 0%,
+      rgb(243 240 231 / 22%) 32%,
+      rgb(243 240 231 / 90%) 66%,
+      var(--ivory-50) 84%
+    );
+    visibility: hidden;
+    opacity: 0;
+    transform: translate3d(0, 18%, 0);
+    transform-origin: center bottom;
+  }
+
+  .heroTransitionMist {
+    object-position: 54% bottom;
+    filter: saturate(0.62) brightness(1.1);
   }
 
   .heroExitMist {
@@ -2275,34 +2335,39 @@
 
   .layers {
     min-height: auto;
+    overflow: clip;
     background: var(--ivory-50);
   }
 
   .faunaStage {
     position: relative;
     height: auto;
-    padding: clamp(5rem, 12vw, 7rem) 1.25rem 1.25rem;
+    padding: clamp(5rem, 12vw, 7rem) 1.25rem clamp(5rem, 12vw, 7rem);
   }
 
   .layersHeading {
-    margin-bottom: 2.5rem;
+    min-height: clamp(14rem, 38svh, 22rem);
+    justify-content: center;
+    margin-bottom: 1rem;
 
     h2 {
       max-width: 8ch;
-      font-size: clamp(3rem, 12vw, 5.25rem);
+      font-size: clamp(2.5rem, 10vw, 4.5rem);
     }
   }
 
   .faunaPanels {
     display: grid;
+    min-height: auto;
+    flex: none;
     overflow: visible;
-    gap: 0.75rem;
+    gap: clamp(0.75rem, 2vw, 1.1rem);
     background: transparent;
   }
 
   .faunaCard,
   .faunaCardActive {
-    min-height: clamp(30rem, 76svh, 40rem);
+    min-height: min(82svh, 46rem);
     flex-basis: auto;
     border-color: rgb(255 255 255 / 28%);
     border-radius: 1rem;
@@ -2318,27 +2383,28 @@
     opacity: 1;
     filter: saturate(0.9) brightness(0.74);
     transform: scale(1.02);
+    transition: none;
   }
 
   .territories {
-    min-height: auto;
-    overflow: clip;
-    background: var(--ivory-50);
+    min-height: 100svh;
+    overflow: visible;
+    background: var(--forest-950);
   }
 
   .territoryStage {
     position: relative;
-    height: auto;
+    height: 100svh;
     min-height: 100svh;
-    background: var(--ivory-50);
+    background: var(--forest-950);
   }
 
   .territoryTexture {
-    display: none;
+    display: block;
   }
 
   .territoryFinalBackground {
-    display: none;
+    display: block;
   }
 
   .territoryTextureImage {
@@ -2347,11 +2413,10 @@
   }
 
   .territoryOpening {
-    position: relative;
-    height: 76svh;
-    min-height: 35rem;
+    position: absolute;
+    height: auto;
+    min-height: 0;
     overflow: hidden;
-    clip-path: none !important;
   }
 
   .territoryOpeningImage {
@@ -2424,44 +2489,39 @@
   }
 
   .territoryCards {
-    --territory-card-gutter: 1rem;
+    --territory-panel-width: min(88vw, 48rem);
 
-    position: relative;
+    position: absolute;
     z-index: 3;
-    inset: auto;
-    display: grid;
-    width: 100%;
-    gap: 0.875rem;
-    margin-top: -7svh;
-    padding: 10svh var(--territory-card-gutter) 4.5rem;
-    background: linear-gradient(
-      180deg,
-      transparent 0%,
-      rgb(243 240 231 / 92%) 5svh,
-      var(--ivory-50) 11svh,
-      var(--ivory-50) 100%
-    );
-    transform: none !important;
+    inset: 0 auto 0 0;
+    display: flex;
+    width: max-content;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
   }
 
   .territoryLeadPanel {
-    display: none;
+    display: block;
   }
 
   .territoryCardPanel {
-    display: block;
-    width: 100%;
-    height: auto;
+    display: flex;
+    width: var(--territory-panel-width);
+    height: 100%;
+    flex: 0 0 var(--territory-panel-width);
+    align-items: center;
   }
 
   .territoryCard {
-    width: 100%;
-    height: clamp(30rem, 72svh, 39rem);
-    min-height: clamp(30rem, 72svh, 39rem);
-    border: 1px solid rgb(20 49 38 / 18%);
-    border-radius: 1.25rem;
-    background: rgb(20 49 38 / 9%);
-    box-shadow: 0 1.5rem 4rem rgb(20 49 38 / 13%);
+    width: min(82vw, 44rem);
+    height: min(70svh, 38rem);
+    min-height: min(30rem, 66svh);
+    border: 1px solid rgb(255 255 255 / 18%);
+    border-radius: 1rem;
+    background: rgb(20 49 38 / 16%);
+    box-shadow: 0 1.5rem 4rem rgb(3 12 8 / 24%);
   }
 
   .territoryCardInner {
@@ -2503,62 +2563,32 @@
   }
 
   .territoryFinale {
-    width: auto;
-    height: 84svh;
-    min-height: 38rem;
-    margin: 0 calc(0px - var(--territory-card-gutter));
-    background: var(--ivory-50);
+    width: 100vw;
+    height: 100svh;
+    min-height: 0;
+    margin: 0;
+    background: transparent;
     box-shadow: none;
 
-    &::before {
-      position: absolute;
-      z-index: 1;
-      top: -1px;
-      right: 0;
-      left: 0;
-      height: 18svh;
-      background: linear-gradient(
-        180deg,
-        var(--ivory-50) 0%,
-        rgb(243 240 231 / 72%) 28%,
-        transparent 100%
-      );
-      content: '';
-      pointer-events: none;
-    }
-
+    &::before,
     &::after {
-      position: absolute;
-      z-index: 1;
-      inset: 0;
-      background:
-        linear-gradient(
-          0deg,
-          var(--ivory-50) 0%,
-          rgb(243 240 231 / 76%) 8%,
-          transparent 28%
-        ),
-        linear-gradient(0deg, transparent 22%, rgb(6 18 13 / 46%) 70%),
-        linear-gradient(90deg, rgb(6 18 13 / 34%), transparent 74%);
-      content: '';
-      pointer-events: none;
+      display: none;
     }
   }
 
   .territoryFinaleMobileImage {
-    display: block;
+    display: none;
     object-position: 52% center;
   }
 
   .territoryFinaleCopy {
-    top: 24%;
+    top: 0;
     right: 1.5rem;
-    bottom: auto;
+    bottom: 0;
     left: 1.5rem;
-    display: block;
+    display: flex;
     width: auto;
     text-align: center;
-    transform: none;
 
     > p:first-child {
       font-size: 0.75rem;
@@ -2575,18 +2605,22 @@
   }
 
   .territoryHint {
-    display: none;
+    right: 1rem;
+    bottom: 1rem;
+    display: flex;
+    font-size: 0.56rem;
   }
 
   .mapTrail {
-    min-height: auto;
+    min-height: 100svh;
+    overflow: visible;
     background: var(--ivory-50);
   }
 
   .mapTrailStage {
     position: relative;
-    height: auto;
-    overflow: visible;
+    height: 100svh;
+    overflow: hidden;
   }
 
   .mapEntryFog {
@@ -2611,7 +2645,7 @@
   }
 
   .mapCarryover {
-    display: none;
+    display: block;
   }
 
   .mapAtmosphere::before {
@@ -2619,13 +2653,13 @@
   }
 
   .mapTrailIntro {
-    position: relative;
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    min-height: 56svh;
-    padding: 6rem 1.25rem 2.5rem;
+    position: absolute;
+    top: 0;
+    right: 1.25rem;
+    bottom: 0;
+    left: 1.25rem;
+    min-height: 0;
+    padding: 5rem 0 2rem;
 
     > p {
       margin-bottom: 1rem;
@@ -2644,21 +2678,21 @@
   }
 
   .mapTrailLayout {
-    position: relative;
-    inset: auto;
+    position: absolute;
+    inset: 0;
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
-    align-content: start;
-    gap: clamp(2.75rem, 7svh, 4.5rem);
-    min-height: 100svh;
-    padding: 5rem 1.25rem clamp(8rem, 17svh, 11rem);
-    opacity: 1;
+    align-content: center;
+    gap: clamp(0.75rem, 2svh, 1.4rem);
+    min-height: 0;
+    padding: 5.25rem 1.25rem 1.5rem;
+    opacity: 0;
   }
 
   .mapTrailCopy {
     display: grid;
     max-width: 27rem;
-    gap: clamp(1rem, 2.5svh, 1.4rem);
+    gap: clamp(0.55rem, 1.4svh, 0.9rem);
 
     > p:first-child {
       margin-bottom: 0;
@@ -2667,26 +2701,26 @@
 
     h3 {
       max-width: none;
-      font-size: clamp(2.2rem, 8.8vw, 3.6rem);
+      font-size: clamp(1.9rem, 7.8vw, 3.35rem);
       line-height: 0.9;
     }
 
     > p:last-child {
       max-width: 28ch;
       margin-top: 0;
-      font-size: 1rem;
+      font-size: 0.92rem;
     }
   }
 
   .mapFigure {
-    width: min(74vw, 22rem);
-    padding-bottom: 2.5rem;
+    width: min(58vw, 18rem);
+    padding-bottom: 1.8rem;
     align-self: start;
     justify-self: center;
   }
 
   .mapFigure svg {
-    max-height: 46svh;
+    max-height: 38svh;
   }
 
   .mapFigure figcaption {
@@ -2701,14 +2735,14 @@
   }
 
   .mapJaguarReveal {
-    position: relative;
-    inset: auto;
+    position: absolute;
+    inset: 0;
     min-height: 100svh;
-    transform: none !important;
+    transform: translate3d(0, 102%, 0);
   }
 
   .faunaButton {
-    padding: 1.15rem;
+    padding: clamp(0.72rem, 2.8vw, 1.15rem);
   }
 
   .faunaMeta,
@@ -2720,7 +2754,6 @@
     max-width: min(28rem, 92%);
   }
 
-  .faunaCard:not(.faunaCardActive) .faunaCardName,
   .faunaCardName {
     max-width: 100%;
     font-size: clamp(2.25rem, 11vw, 4.75rem);
@@ -2729,9 +2762,30 @@
     transform: none;
   }
 
-  .faunaScientific,
-  .faunaDescription,
-  .faunaFutureLink {
+  .faunaCard:not(.faunaCardActive) .faunaCardName {
+    font-size: clamp(2.25rem, 11vw, 4.75rem);
+    line-height: 0.82;
+    writing-mode: horizontal-tb;
+    transform: none;
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaScientific,
+  .faunaCard:not(.faunaCardActive) .faunaDescription {
+    display: block;
+    opacity: 1;
+    transform: none;
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaFutureLink {
+    display: flex;
+    opacity: 1;
+    transform: none;
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaButton,
+  .faunaCardActive .faunaScientific,
+  .faunaCardActive .faunaDescription,
+  .faunaCardActive .faunaFutureLink {
     opacity: 1;
     transform: none;
   }
@@ -2757,8 +2811,6 @@
   .breathReveal {
     grid-column: 1 / -1;
     margin-top: clamp(3.5rem, 9vh, 6rem);
-    -webkit-mask-image: none;
-    mask-image: none;
 
     h2 {
       font-size: clamp(2.45rem, 10.5vw, 3.4rem);
@@ -2819,8 +2871,6 @@
     left: 1.25rem;
     max-width: none;
     font-size: clamp(2.55rem, 13.5vw, 5.25rem);
-    -webkit-mask-image: none;
-    mask-image: none;
   }
 
   .jaguarImage,
@@ -2884,13 +2934,52 @@
 
   .macaw {
     min-height: 145svh;
-    margin-top: 0;
+    margin-top: -100svh;
     overflow: visible;
+    background: transparent;
+  }
+
+  .macawTransitionEdge {
+    position: absolute;
+    z-index: 10;
+    top: -15svh;
+    right: -14vw;
+    left: -14vw;
+    display: block;
+    height: 25svh;
+    background:
+      radial-gradient(
+        ellipse at 20% 72%,
+        rgb(243 240 231 / 78%) 0%,
+        rgb(220 231 223 / 46%) 38%,
+        transparent 72%
+      ),
+      radial-gradient(
+        ellipse at 80% 76%,
+        rgb(243 240 231 / 72%) 0%,
+        rgb(220 231 223 / 38%) 42%,
+        transparent 74%
+      ),
+      linear-gradient(180deg, transparent 0%, rgb(243 240 231 / 88%) 100%);
+    filter: blur(13px);
+    pointer-events: none;
   }
 
   .macawStage {
     position: sticky;
     top: 0;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--macaw-entry-feather, 0svh),
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--macaw-entry-feather, 0svh),
+      #000 100%
+    );
   }
 
   .macawBackground {
@@ -2957,6 +3046,12 @@
     }
   }
 
+  .macawStripImage {
+    object-position: center 48%;
+    filter: saturate(0.68) contrast(1.04) brightness(0.52);
+    opacity: 1;
+  }
+
   .wholePulse {
     right: -24vw;
     bottom: 28%;
@@ -2968,17 +3063,35 @@
   }
 
   .epilogueSequence {
-    margin-top: 0;
+    z-index: 63;
+    margin-top: -100svh;
+  }
+
+  .epilogueStage {
+    height: 100svh;
+    overflow: hidden;
+    background: var(--forest-900);
+    isolation: isolate;
+  }
+
+  .signatureTransitionEdge {
+    display: block;
+  }
+
+  .whole,
+  .signature {
+    position: absolute;
+    inset: 0;
+    margin: 0;
   }
 
   .whole {
-    min-height: 135svh;
-    overflow: visible;
+    min-height: 100svh;
+    overflow: hidden;
   }
 
   .wholeStage {
-    position: sticky;
-    top: 0;
+    position: relative;
   }
 
   .wholeCopy {
@@ -2999,6 +3112,18 @@
     min-height: 100svh;
     margin-top: 0;
     padding: 5.75rem 1.25rem 8svh;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--signature-entry-feather, 0svh),
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--signature-entry-feather, 0svh),
+      #000 100%
+    );
   }
 
   .signatureBackground {
@@ -3120,11 +3245,192 @@
   }
 }
 
-@media (max-width: 900px) and (max-height: 700px) {
+@media (max-width: 1023px) and (max-height: 700px) and (orientation: landscape) {
+  .macaw,
+  .epilogueSequence,
+  .signature {
+    margin-top: 0;
+  }
+
+  .macawTransitionEdge,
+  .signatureTransitionEdge {
+    display: none;
+  }
+
+  .macawStage,
+  .signature {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .epilogueStage {
+    height: auto;
+    overflow: visible;
+  }
+
+  .whole,
+  .signature {
+    position: relative;
+    inset: auto;
+  }
+
+  .whole {
+    min-height: 135svh;
+  }
+
+  .wholeStage {
+    position: sticky;
+    top: 0;
+  }
+
+  .layers {
+    min-height: auto;
+    overflow: clip;
+  }
+
+  .faunaStage {
+    height: auto;
+  }
+
+  .faunaPanels {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .faunaCard,
+  .faunaCardActive {
+    min-height: max(22rem, 92svh);
+    flex-basis: auto;
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaButton {
+    display: flex;
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaImage {
+    opacity: 1;
+    filter: saturate(0.9) brightness(0.74);
+    transform: scale(1.02);
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaCardName {
+    font-size: clamp(2.25rem, 8vw, 4.75rem);
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaScientific,
+  .faunaCard:not(.faunaCardActive) .faunaDescription {
+    display: block;
+    opacity: 1;
+    transform: none;
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaFutureLink {
+    display: flex;
+    opacity: 1;
+    transform: none;
+  }
+
+  .territories {
+    min-height: auto;
+    overflow: clip;
+    background: var(--ivory-50);
+  }
+
+  .territoryStage {
+    height: auto;
+    background: var(--ivory-50);
+  }
+
+  .territoryTexture,
+  .territoryFinalBackground {
+    display: none;
+  }
+
+  .territoryOpening {
+    position: relative;
+    height: 100svh;
+    min-height: 0;
+    clip-path: none !important;
+  }
+
+  .territoryCards {
+    --territory-card-gutter: 1rem;
+
+    position: relative;
+    inset: auto;
+    display: grid;
+    width: 100%;
+    gap: 0.875rem;
+    margin-top: -7svh;
+    padding: 10svh var(--territory-card-gutter) 4.5rem;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgb(243 240 231 / 92%) 5svh,
+      var(--ivory-50) 11svh,
+      var(--ivory-50) 100%
+    );
+    transform: none !important;
+  }
+
+  .territoryLeadPanel {
+    display: none;
+  }
+
+  .territoryCardPanel {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .territoryCard {
+    width: 100%;
+    height: max(22rem, 92svh);
+    min-height: 0;
+  }
+
+  .territoryFinale {
+    width: auto;
+    height: 100svh;
+    margin: 0 calc(0px - var(--territory-card-gutter));
+    background: var(--forest-950);
+  }
+
+  .territoryFinaleMobileImage {
+    display: block;
+  }
+
+  .territoryHint {
+    display: none;
+  }
+
+  .mapTrail {
+    min-height: auto;
+  }
+
+  .mapTrailStage {
+    height: auto;
+    overflow: visible;
+  }
+
+  .mapCarryover {
+    display: none;
+  }
+
+  .mapTrailIntro {
+    position: relative;
+    inset: auto;
+    min-height: 100svh;
+  }
+
   .mapTrailLayout {
+    position: relative;
+    inset: auto;
+    min-height: max(34rem, 110svh);
     gap: 0.25rem;
     padding-top: 4.75rem;
     padding-bottom: 0.75rem;
+    opacity: 1;
   }
 
   .mapTrailCopy {
@@ -3153,6 +3459,13 @@
   .mapFigure svg {
     max-height: 30svh;
   }
+
+  .mapJaguarReveal {
+    position: relative;
+    inset: auto;
+    min-height: 100svh;
+    transform: none !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3170,6 +3483,60 @@
   .scrollCuePreviewImage,
   .scrollCueArrow {
     transition: none;
+  }
+
+  .layers {
+    min-height: auto;
+  }
+
+  .faunaStage {
+    height: auto;
+  }
+
+  .faunaPanels {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .faunaCard,
+  .faunaCardActive {
+    min-height: min(76svh, 48rem);
+    flex-basis: auto;
+
+    &::after {
+      opacity: 0;
+    }
+  }
+
+  .faunaImage,
+  .faunaCardActive .faunaImage,
+  .faunaCard:not(.faunaCardActive) .faunaImage {
+    opacity: 1;
+    filter: saturate(0.9) brightness(0.74);
+    transform: scale(1.02);
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaButton {
+    display: flex;
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaCardName {
+    font-size: clamp(2.25rem, 8vw, 5.5rem);
+    writing-mode: horizontal-tb;
+    transform: none;
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaScientific,
+  .faunaCard:not(.faunaCardActive) .faunaDescription {
+    display: block;
+    opacity: 1;
+    transform: none;
+  }
+
+  .faunaCard:not(.faunaCardActive) .faunaFutureLink {
+    display: flex;
+    opacity: 1;
+    transform: none;
   }
 
   .heroSequence {
@@ -3339,6 +3706,22 @@
     margin-top: 0;
   }
 
+  .macawTransitionEdge,
+  .signatureTransitionEdge {
+    display: none;
+  }
+
+  .macawStage,
+  .signature {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .epilogueStage {
+    height: auto;
+    overflow: visible;
+  }
+
   .macawStage {
     position: relative;
   }
@@ -3361,6 +3744,13 @@
   .macawColorTrace,
   .macawFeatherStrips {
     display: none;
+  }
+
+  .whole,
+  .signature {
+    position: relative;
+    inset: auto;
+    transform: none !important;
   }
 
   .whole {

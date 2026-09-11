@@ -22,6 +22,14 @@
 html {
   background: var(--forest-950);
   scroll-behavior: auto;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 html.lenis,
@@ -82,7 +90,7 @@ a {
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   html,
   body {
     overflow-x: clip;

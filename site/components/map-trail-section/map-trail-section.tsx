@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { type ReactNode, useId, useRef } from 'react';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { MOTION_QUERIES, useMotionProfile } from '@/hooks/use-motion-profile';
 import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 const contourPaths = [
@@ -110,14 +110,16 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
           : 'territorios';
       };
 
-      media.add('(min-width: 901px)', () => {
-        gsap.set(intro, { autoAlpha: 0, y: 32 });
+      media.add(MOTION_QUERIES.cinematic, () => {
+        const compact = window.matchMedia(MOTION_QUERIES.compact).matches;
+
+        gsap.set(intro, { autoAlpha: 0, y: compact ? 24 : 32 });
         gsap.set(mapLayout, { autoAlpha: 0 });
-        gsap.set(mapFigure, { scale: 0.84 });
+        gsap.set(mapFigure, { scale: compact ? 0.92 : 0.84 });
         gsap.set(labels, { autoAlpha: 0, y: 12 });
         gsap.set(carryover, { autoAlpha: 1, scale: 1.015 });
-        gsap.set(jaguarReveal, { yPercent: 102 });
-        gsap.set(jaguarVisuals, { scale: 1.12 });
+        gsap.set(jaguarReveal, { y: 0, yPercent: 102 });
+        gsap.set(jaguarVisuals, { scale: compact ? 1.08 : 1.12 });
         gsap.set(jaguarEyes, { autoAlpha: 0 });
         gsap.set(jaguarVeil, { autoAlpha: 0.86 });
         gsap.set(jaguarGhost, { autoAlpha: 0, xPercent: -3 });
@@ -141,9 +143,9 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
           scrollTrigger: {
             trigger: section,
             start: 'top top',
-            end: () => '+=' + window.innerHeight * 2.5,
+            end: () => '+=' + window.innerHeight * (compact ? 2.15 : 2.5),
             pin: section,
-            scrub: true,
+            scrub: compact ? 0.2 : true,
             invalidateOnRefresh: true,
             onUpdate: (self) => updateHeader(self.progress),
           },
@@ -164,9 +166,9 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
           .to(
             mapFigure,
             {
-              scale: 1.52,
-              xPercent: 13,
-              yPercent: 15,
+              scale: compact ? 1.2 : 1.52,
+              xPercent: compact ? 5 : 13,
+              yPercent: compact ? 6 : 15,
               transformOrigin: '35% 25%',
               duration: 0.28,
             },
@@ -185,7 +187,7 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
           )
           .to(jaguarLines, { yPercent: 0, stagger: 0.07, duration: 0.18 }, 1)
           .to(jaguarEyes, { autoAlpha: 0, duration: 0.16 }, 1.08)
-          .to(jaguarReveal, { yPercent: 0, duration: 1.26 }, 1.24);
+          .to({}, { duration: 1.26 }, 1.24);
 
         return () => {
           entryReveal.kill();
@@ -193,7 +195,7 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
         };
       });
 
-      media.add('(max-width: 900px)', () => {
+      media.add(MOTION_QUERIES.shortLandscape, () => {
         gsap.set([intro, mapLayout, jaguarReveal], {
           autoAlpha: 1,
           x: 0,

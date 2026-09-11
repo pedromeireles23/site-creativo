@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import Image, { getImageProps } from 'next/image';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
+import { MOTION_QUERIES } from '@/hooks/use-motion-profile';
 import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 export function VeinsSection() {
@@ -38,10 +39,10 @@ export function VeinsSection() {
 
       media.add(
         {
-          desktop: '(min-width: 901px)',
-          compact: '(max-width: 900px)',
+          desktop: MOTION_QUERIES.wide,
+          compact: MOTION_QUERIES.compact,
           textMotion: '(min-width: 768px)',
-          reduce: '(prefers-reduced-motion: reduce)',
+          reduce: MOTION_QUERIES.reduced,
         },
         (context) => {
           const { compact, textMotion, reduce } = context.conditions as {
@@ -54,7 +55,11 @@ export function VeinsSection() {
 
           if (compact) {
             gsap.set(info, { y: 0 });
-            gsap.set(statement, { '--water-mask-position': '100%' });
+            gsap.set(statement, {
+              autoAlpha: 1,
+              y: 0,
+              '--water-mask-position': '-30%',
+            });
 
             const imageMotion = gsap.fromTo(
               image,
@@ -86,18 +91,23 @@ export function VeinsSection() {
               },
             });
 
-            const statementReveal = gsap.from(statement, {
-              autoAlpha: 0,
-              y: 30,
-              duration: 0.68,
-              ease: 'power3.out',
-              immediateRender: false,
-              scrollTrigger: {
-                trigger: statement,
-                start: 'top 84%',
-                toggleActions: 'play none none reverse',
+            const statementReveal = gsap.fromTo(
+              statement,
+              { '--water-mask-position': '-30%', y: 18 },
+              {
+                '--water-mask-position': '100%',
+                y: 0,
+                ease: 'none',
+                immediateRender: false,
+                scrollTrigger: {
+                  trigger: statement,
+                  start: 'top 88%',
+                  end: 'top 35%',
+                  scrub: 0.25,
+                  invalidateOnRefresh: true,
+                },
               },
-            });
+            );
 
             return () => {
               imageMotion.kill();
@@ -182,7 +192,7 @@ export function VeinsSection() {
     >
       <picture className={styles.waterVisual}>
         <source
-          media="(max-width: 900px)"
+          media={MOTION_QUERIES.compact}
           srcSet={mobileWaterSrcSet}
           sizes="100vw"
         />

@@ -4,16 +4,13 @@ import { useRef } from 'react';
 import Image from 'next/image';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { MOTION_QUERIES, useMotionProfile } from '@/hooks/use-motion-profile';
 import {
   gsap,
   scheduleScrollRefresh,
   ScrollTrigger,
   useGSAP,
 } from '@/lib/gsap';
-
-const TRANSPARENT_PIXEL =
-  'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 
 export function HeroExperience() {
   const heroRef = useRef<HTMLElement>(null);
@@ -61,6 +58,12 @@ export function HeroExperience() {
       );
       const textReveal =
         breath.querySelector<HTMLElement>('[data-text-reveal]');
+      const breathKicker = breath.querySelector<HTMLElement>(
+        '[data-breath-kicker]',
+      );
+      const breathKickerText = breath.querySelector<HTMLElement>(
+        '[data-breath-kicker-text]',
+      );
       const scribblePaths = breath.querySelectorAll<SVGPathElement>(
         '[data-scribble-path]',
       );
@@ -81,6 +84,8 @@ export function HeroExperience() {
         !frontForest ||
         !transitionPlane ||
         !breathChapter ||
+        !breathKicker ||
+        !breathKickerText ||
         !textReveal
       ) {
         return;
@@ -176,9 +181,9 @@ export function HeroExperience() {
 
       media.add(
         {
-          desktop: '(min-width: 901px)',
-          compact: '(max-width: 900px)',
-          reduce: '(prefers-reduced-motion: reduce)',
+          desktop: MOTION_QUERIES.wide,
+          compact: MOTION_QUERIES.compact,
+          reduce: MOTION_QUERIES.reduced,
         },
         (context) => {
           const { compact, reduce } = context.conditions as {
@@ -197,8 +202,16 @@ export function HeroExperience() {
             gsap.set(midForest, { yPercent: 112, scale: 1.06 });
             gsap.set(frontForest, { yPercent: 114, scale: 1.08 });
             gsap.set(exitMist, { autoAlpha: 0, yPercent: 28 });
-            gsap.set(transitionPlane, { rotationX: 0, autoAlpha: 0 });
-            gsap.set(textReveal, { '--mask-position': '100%' });
+            gsap.set(transitionPlane, {
+              rotationX: 0,
+              autoAlpha: 0,
+              yPercent: 18,
+            });
+            gsap.set(textReveal, {
+              autoAlpha: 1,
+              y: 0,
+              '--mask-position': '-40%',
+            });
 
             let heroTimeline: gsap.core.Timeline | undefined;
 
@@ -261,6 +274,11 @@ export function HeroExperience() {
                   { yPercent: 28, autoAlpha: 0 },
                   { yPercent: 0, autoAlpha: 1, duration: 0.34 },
                   0.7,
+                )
+                .to(
+                  transitionPlane,
+                  { yPercent: 0, autoAlpha: 1, duration: 0.32 },
+                  0.68,
                 );
 
               ScrollTrigger.refresh();
@@ -317,39 +335,66 @@ export function HeroExperience() {
               },
             });
 
-            const copyReveal = gsap.from(textReveal, {
-              autoAlpha: 0,
-              y: 30,
-              duration: 0.72,
-              ease: 'power3.out',
-              immediateRender: false,
+            const copyReveal = gsap.fromTo(
+              textReveal,
+              { '--mask-position': '-40%', y: 18 },
+              {
+                '--mask-position': '100%',
+                y: 0,
+                ease: 'none',
+                immediateRender: false,
+                scrollTrigger: {
+                  trigger: textReveal,
+                  start: 'top 86%',
+                  end: 'top 38%',
+                  scrub: 0.25,
+                  invalidateOnRefresh: true,
+                },
+              },
+            );
+
+            const kickerReveal = gsap.timeline({
               scrollTrigger: {
-                trigger: textReveal,
-                start: 'top 82%',
+                trigger: breathKicker,
+                start: 'top 84%',
                 toggleActions: 'play none none reverse',
               },
             });
 
-            const scribbleReveal = scribblePaths.length
-              ? gsap.from(scribblePaths, {
-                  strokeDashoffset: 520,
-                  duration: 0.72,
+            kickerReveal.fromTo(
+              breathKickerText,
+              { autoAlpha: 0, y: 10 },
+              {
+                autoAlpha: 1,
+                y: 0,
+                duration: 0.5,
+                ease: 'power2.out',
+                immediateRender: false,
+              },
+              0,
+            );
+
+            if (scribblePaths.length) {
+              kickerReveal.fromTo(
+                scribblePaths,
+                { strokeDashoffset: 520 },
+                {
+                  strokeDashoffset: 0,
+                  duration: 0.86,
+                  stagger: 0.06,
                   ease: 'power2.out',
                   immediateRender: false,
-                  scrollTrigger: {
-                    trigger: textReveal,
-                    start: 'top 86%',
-                    toggleActions: 'play none none reverse',
-                  },
-                })
-              : null;
+                },
+                0.08,
+              );
+            }
 
             return () => {
               entryTimeline.kill();
               heroTimeline?.kill();
               chapterReveal.kill();
               copyReveal.kill();
-              scribbleReveal?.kill();
+              kickerReveal.kill();
             };
           }
 
@@ -483,35 +528,46 @@ export function HeroExperience() {
         <div className={styles.heroTransitionBridge} aria-hidden="true">
           <div className={styles.heroTransitionPlane} data-transition-plane>
             <div className={styles.heroTransitionCanvas}>
-              <picture>
-                <source
-                  media="(max-width: 900px), (prefers-reduced-motion: reduce)"
-                  srcSet={TRANSPARENT_PIXEL}
-                />
-                <Image
-                  className={styles.heroTransitionMist}
-                  src="/images/forest-mist-transition.png"
-                  alt=""
-                  fill
-                  sizes="100vw"
-                  fetchPriority="low"
-                />
-              </picture>
+              <Image
+                className={styles.heroTransitionMist}
+                src="/images/forest-mist-transition.png"
+                alt=""
+                fill
+                sizes="100vw"
+                fetchPriority="low"
+              />
             </div>
           </div>
         </div>
 
         <div className={styles.hero} data-hero-pin>
           <div className={styles.heroStage}>
-            <Image
-              className={styles.heroImage}
-              data-hero-background
-              src="/images/hero-amazon-dawn.png"
-              alt="Floresta amazônica coberta por névoa ao amanhecer"
-              fill
-              preload
-              sizes="100vw"
-            />
+            {reduceMotion ? (
+              <Image
+                className={styles.heroImage}
+                data-hero-background
+                src="/videos/hero-fauna-v4-poster.jpg"
+                alt="Onça-pintada em meio à floresta amazônica"
+                fill
+                preload
+                sizes="100vw"
+              />
+            ) : (
+              <video
+                className={styles.heroImage}
+                data-hero-background
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                poster="/videos/hero-fauna-v4-poster.jpg"
+                aria-hidden="true"
+              >
+                <source src="/videos/hero-fauna-v4.webm" type="video/webm" />
+                <source src="/videos/hero-fauna-v4.mp4" type="video/mp4" />
+              </video>
+            )}
             <div
               className={styles.heroShade}
               data-hero-shade
@@ -561,6 +617,7 @@ export function HeroExperience() {
 
             <a
               className={styles.scrollCue}
+              data-cursor-label="Assistir"
               data-scroll-cue
               href="https://www.youtube.com/watch?v=SSdwbEcAsWc&t=12s"
               target="_blank"
@@ -615,7 +672,7 @@ export function HeroExperience() {
         </p>
 
         <div className={styles.breathComposition}>
-          <div className={styles.breathKicker}>
+          <div className={styles.breathKicker} data-breath-kicker>
             <svg viewBox="0 0 230 86" aria-hidden="true">
               <path
                 data-scribble-path
@@ -623,7 +680,7 @@ export function HeroExperience() {
               />
               <path data-scribble-path d="M20 51C61 73 187 75 216 38" />
             </svg>
-            <p>Um organismo vivo</p>
+            <p data-breath-kicker-text>Um organismo vivo</p>
           </div>
 
           <div className={styles.breathReveal} data-text-reveal>

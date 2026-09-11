@@ -340,8 +340,23 @@
 
 @media (max-width: 800px) {
   .navigation {
-    align-items: start;
-    padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem 0.75rem;
+    width: calc(100% - 2.5rem);
+    height: 3.125rem;
+    min-height: 0;
+    grid-template-columns: repeat(3, minmax(0, 5rem));
+    align-items: center;
+    justify-content: space-between;
+    margin: max(0.9375rem, env(safe-area-inset-top)) 1.25rem 0;
+    padding: 0.3125rem;
+    border-radius: 0.125rem;
+    background: rgb(243 240 231 / 5%);
+    box-shadow:
+      0.021875rem 0.021875rem 0 rgb(255 255 255 / 20%) inset,
+      0 0 0.109375rem rgb(255 255 255 / 20%) inset;
+    backdrop-filter: blur(3px);
+    transition:
+      background-color 320ms ease,
+      box-shadow 320ms ease;
   }
 
   .desktopLeft,
@@ -351,40 +366,73 @@
 
   .mobileLeft,
   .mobileRight {
-    display: block;
-  }
-
-  .mobileRight {
-    justify-self: end;
+    display: grid;
+    width: 5rem;
+    height: 2.5rem;
   }
 
   .navigationItem {
-    min-width: 6.8rem;
-    min-height: 3rem;
+    width: 100%;
+    min-width: 0;
+    min-height: 2.5rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
     font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: none;
+
+    &:hover {
+      border-radius: 0;
+    }
   }
 
   .mobileAccent {
-    background: var(--macaw-red);
-    border-color: var(--macaw-red);
+    background: #ff7e15;
+    color: #fff;
+
+    &:hover {
+      background: var(--macaw-red);
+      color: var(--ivory-50);
+    }
   }
 
   .logo {
-    min-width: 7.2rem;
-    min-height: 3rem;
-    align-content: start;
-    padding-top: 0.3rem;
+    width: 5rem;
+    min-width: 5rem;
+    height: 2.5rem;
+    align-content: center;
+    padding: 0;
   }
 
   .logoMark {
-    width: 5.4rem;
-    height: 1.05rem;
+    display: block;
+    width: 5rem;
+    height: 1.125rem;
   }
 
   .logoText {
-    margin-top: 0.2rem;
-    font-size: 0.6875rem;
-    letter-spacing: 0.12em;
+    margin-top: 0.125rem;
+    font-size: 0.5rem;
+    line-height: 0.625rem;
+    letter-spacing: 0.16em;
+    white-space: nowrap;
+  }
+
+  .header[data-theme='light'] .navigation {
+    background: rgb(20 49 38 / 5%);
+    box-shadow:
+      0.021875rem 0.021875rem 0 rgb(255 255 255 / 36%) inset,
+      0 0 0.109375rem rgb(255 255 255 / 30%) inset;
+  }
+
+  .header[data-theme='light'] .navigationItem {
+    color: var(--forest-950);
+  }
+
+  .header[data-theme='light'] .mobileAccent,
+  .header[data-theme='light'] .mobileAccent:hover {
+    color: var(--ivory-50);
   }
 
   .header[data-menu-open='true'] .navigation {
@@ -482,42 +530,7 @@
   }
 }
 
-@media (max-width: 390px) {
-  .navigationItem {
-    min-width: 5.9rem;
-    padding-right: 0.7rem;
-    padding-left: 0.7rem;
-  }
-
-  .logo {
-    min-width: 6rem;
-  }
-}
-
 @media (max-width: 360px) {
-  .navigation {
-    padding-right: 0.5rem;
-    padding-left: 0.5rem;
-  }
-
-  .navigationItem {
-    min-width: 5.5rem;
-    padding-right: 0.55rem;
-    padding-left: 0.55rem;
-  }
-
-  .logo {
-    min-width: 5.75rem;
-  }
-
-  .logoMark {
-    width: 5rem;
-  }
-
-  .logoText {
-    letter-spacing: 0.1em;
-  }
-
   .panel {
     padding-right: 1rem;
     padding-left: 1rem;

@@ -200,9 +200,9 @@ export function SiteHeader() {
           <div className={styles.mobileRight}>
             <a
               className={`${styles.navigationItem} ${styles.mobileAccent}`}
-              href="#silencio"
+              href="#folego"
             >
-              Silêncio
+              Explorar
             </a>
           </div>
         </nav>

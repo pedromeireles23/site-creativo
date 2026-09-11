@@ -1,4 +1,5 @@
 import { HeroExperience } from '@/components/hero-experience/hero-experience';
+import { CustomCursor } from '@/components/custom-cursor/custom-cursor';
 import { FaunaSection } from '@/components/fauna-section/fauna-section';
 import { EpilogueSection } from '@/components/epilogue-section/epilogue-section';
 import { JaguarSection } from '@/components/jaguar-section/jaguar-section';
@@ -17,6 +18,8 @@ export default function Home() {
       </a>
 
       <SiteHeader />
+
+      <CustomCursor />
 
       <div className={styles.grid} aria-hidden="true">
         {Array.from({ length: 12 }, (_, index) => (

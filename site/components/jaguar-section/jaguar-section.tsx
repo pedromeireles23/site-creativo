@@ -12,6 +12,7 @@ export function JaguarSection() {
       data-jaguar-scene
       data-header-theme="dark"
       data-header-chapter="olhos"
+      data-scroll-anchor-progress="0.6"
     >
       <Image
         className={styles.jaguarImage}

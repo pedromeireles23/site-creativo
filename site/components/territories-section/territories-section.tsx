@@ -4,7 +4,7 @@ import { useId, useRef } from 'react';
 import Image from 'next/image';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { MOTION_QUERIES, useMotionProfile } from '@/hooks/use-motion-profile';
 import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 const territories = [
@@ -108,22 +108,23 @@ export function TerritoriesSection() {
 
       const media = gsap.matchMedia();
 
-      media.add('(min-width: 901px)', () => {
+      media.add(MOTION_QUERIES.cinematic, () => {
+        const compact = window.matchMedia(MOTION_QUERIES.compact).matches;
         const viewportHeight = window.innerHeight;
         const horizontalDistance = Math.max(
           0,
           track.scrollWidth - window.innerWidth,
         );
-        const introDistance = 1.5 * viewportHeight;
-        const revealDistance = viewportHeight;
-        const horizontalDuration = 1.5 * horizontalDistance;
+        const introDistance = (compact ? 1.15 : 1.5) * viewportHeight;
+        const revealDistance = (compact ? 0.85 : 1) * viewportHeight;
+        const horizontalDuration = (compact ? 1.35 : 1.5) * horizontalDistance;
 
         gsap.set(revealRects[0], { attr: { width: 0.3333 } });
         gsap.set(revealRects[1], { attr: { width: 0.3334 } });
         gsap.set(revealRects[2], { attr: { width: 0.3333 } });
         gsap.set(texture, { clipPath: 'inset(0% 0% 0% 0%)' });
         gsap.set(cards, { y: 0, autoAlpha: 1 });
-        gsap.set(finaleText, { x: 56, autoAlpha: 0 });
+        gsap.set(finaleText, { x: compact ? 24 : 56, autoAlpha: 0 });
         gsap.set(hint, { autoAlpha: 0 });
 
         const timeline = gsap.timeline({
@@ -143,14 +144,14 @@ export function TerritoriesSection() {
           .fromTo(
             openingImage,
             { scale: 1.015 },
-            { scale: 1.075, duration: introDistance },
+            { scale: compact ? 1.055 : 1.075, duration: introDistance },
             0,
           )
           .fromTo(
             heading,
             { scale: 1 },
             {
-              scale: 0.68,
+              scale: compact ? 0.62 : 0.68,
               transformOrigin: 'center center',
               duration: 0.5 * introDistance,
             },
@@ -213,7 +214,7 @@ export function TerritoriesSection() {
 
         const finaleReveal = gsap.fromTo(
           finaleText,
-          { x: 56, autoAlpha: 0 },
+          { x: compact ? 24 : 56, autoAlpha: 0 },
           {
             x: 0,
             autoAlpha: 1,
@@ -255,7 +256,7 @@ export function TerritoriesSection() {
         };
       });
 
-      media.add('(max-width: 900px)', () => {
+      media.add(MOTION_QUERIES.shortLandscape, () => {
         gsap.set(cards, { autoAlpha: 1, y: 0 });
         gsap.set(finaleText, { autoAlpha: 1, x: 0 });
 
@@ -525,7 +526,7 @@ export function TerritoriesSection() {
                         src={territory.image}
                         alt={`Paisagem de ${territory.name} na Amazônia`}
                         fill
-                        sizes="(max-width: 900px) 92vw, 50vw"
+                        sizes="(max-width: 1023px) 92vw, 50vw"
                       />
                     </div>
 

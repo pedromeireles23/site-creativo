@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { type CSSProperties, useRef } from 'react';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
-import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { MOTION_QUERIES, useMotionProfile } from '@/hooks/use-motion-profile';
 import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
 const canopyImage = '/images/macaw/canopy-opening-amazon.png';
@@ -24,6 +24,9 @@ export function MacawSection() {
       if (!section) return;
 
       const stage = section.querySelector<HTMLElement>('[data-macaw-stage]');
+      const transitionEdge = section.querySelector<HTMLElement>(
+        '[data-macaw-transition-edge]',
+      );
       const background = section.querySelector<HTMLElement>(
         '[data-macaw-background]',
       );
@@ -47,7 +50,8 @@ export function MacawSection() {
         section,
       );
 
-      if (!stage || !background || !bird || !ghost || !copy) return;
+      if (!stage || !transitionEdge || !background || !bird || !ghost || !copy)
+        return;
 
       if (reduceMotion) {
         return;
@@ -59,7 +63,7 @@ export function MacawSection() {
         section.dataset.headerTheme = progress > 0.82 ? 'dark' : 'light';
       };
 
-      media.add('(min-width: 901px)', () => {
+      media.add(MOTION_QUERIES.wide, () => {
         gsap.set(background, { scale: 1.08 });
         gsap.set(bird, {
           autoAlpha: 0,
@@ -135,8 +139,64 @@ export function MacawSection() {
         return () => timeline.kill();
       });
 
-      media.add('(max-width: 900px)', () => {
+      media.add(MOTION_QUERIES.compact, () => {
         const compactStrips = strips.slice(0, 5);
+        const entryFeather = { value: 16 };
+
+        gsap.set(stage, {
+          autoAlpha: 1,
+          clipPath: 'inset(0 0 100% 0)',
+        });
+        stage.style.setProperty('--macaw-entry-feather', '16svh');
+        gsap.set(transitionEdge, {
+          autoAlpha: 0,
+          yPercent: 34,
+        });
+
+        const entryReveal = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: section,
+            start: 'top bottom',
+            end: 'top top',
+            scrub: 0.28,
+            invalidateOnRefresh: true,
+          },
+        });
+
+        entryReveal
+          .to(
+            entryFeather,
+            {
+              value: 0,
+              duration: 1,
+              onUpdate: () => {
+                stage.style.setProperty(
+                  '--macaw-entry-feather',
+                  `${entryFeather.value}svh`,
+                );
+              },
+            },
+            0,
+          )
+          .to(
+            stage,
+            {
+              clipPath: 'inset(0 0 0% 0)',
+              duration: 1,
+            },
+            0,
+          )
+          .to(
+            transitionEdge,
+            { autoAlpha: 0.9, yPercent: 0, duration: 0.28 },
+            0.06,
+          )
+          .to(
+            transitionEdge,
+            { autoAlpha: 0, yPercent: -28, duration: 0.34 },
+            0.64,
+          );
 
         gsap.set(background, { scale: 1.055 });
         gsap.set(bird, {
@@ -184,9 +244,23 @@ export function MacawSection() {
             compactStrips,
             { yPercent: 0, stagger: 0.035, duration: 0.18 },
             0.8,
-          );
+          )
+          .to(
+            compactStrips,
+            {
+              borderColor: 'rgba(243, 240, 231, 0)',
+              boxShadow: 'none',
+              duration: 0.1,
+            },
+            1.01,
+          )
+          .to(stage, { autoAlpha: 0, duration: 0.08 }, 1.04);
 
-        return () => timeline.kill();
+        return () => {
+          entryReveal.kill();
+          timeline.kill();
+          stage.style.removeProperty('--macaw-entry-feather');
+        };
       });
 
       scheduleScrollRefresh();
@@ -207,7 +281,14 @@ export function MacawSection() {
       aria-labelledby="asas-title"
       data-header-theme="light"
       data-header-chapter="asas"
+      data-scroll-anchor-progress="0.58"
     >
+      <div
+        className={styles.macawTransitionEdge}
+        data-macaw-transition-edge
+        aria-hidden="true"
+      />
+
       <div className={styles.macawStage} data-macaw-stage>
         <div className={styles.macawBackgroundFrame}>
           <Image
@@ -240,7 +321,7 @@ export function MacawSection() {
             src={macawImage}
             alt="Arara-vermelha em voo com as asas abertas"
             fill
-            sizes="(max-width: 900px) 110vw, 72vw"
+            sizes="(max-width: 1023px) 110vw, 72vw"
           />
         </div>
 

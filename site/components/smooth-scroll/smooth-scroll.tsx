@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { useMotionCapabilities } from '@/hooks/use-motion-profile';
 import { gsap, scheduleScrollRefresh, ScrollTrigger } from '@/lib/gsap';
 
 type SmoothScrollController = {
@@ -30,6 +30,37 @@ const SmoothScrollContext = createContext<SmoothScrollContextValue>({
   resume: () => undefined,
 });
 
+const resolveHashScrollTarget = (hash: string) => {
+  const target = document.getElementById(hash);
+  if (!target) return null;
+
+  const progress = Number.parseFloat(target.dataset.scrollAnchorProgress ?? '');
+  if (!Number.isFinite(progress)) return target;
+
+  const pinnedTrigger = ScrollTrigger.getAll()
+    .filter((trigger) => {
+      const triggerElement = trigger.trigger;
+
+      return (
+        Boolean(trigger.vars.pin) &&
+        triggerElement instanceof Element &&
+        (triggerElement === target || triggerElement.contains(target))
+      );
+    })
+    .sort(
+      (first, second) =>
+        second.end - second.start - (first.end - first.start),
+    )[0];
+
+  if (!pinnedTrigger) return target;
+
+  const clampedProgress = Math.min(1, Math.max(0, progress));
+  return (
+    pinnedTrigger.start +
+    (pinnedTrigger.end - pinnedTrigger.start) * clampedProgress
+  );
+};
+
 export function useSmoothScrollReady() {
   return useContext(SmoothScrollContext).isReady;
 }
@@ -40,7 +71,7 @@ export function useSmoothScrollControls() {
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
-  const motionProfile = useMotionProfile();
+  const { preference: motionPreference } = useMotionCapabilities();
   const controllerRef = useRef<SmoothScrollController | null>(null);
   const pauseRequestedRef = useRef(false);
 
@@ -69,10 +100,16 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         const hash = decodeURIComponent(window.location.hash.slice(1));
         if (!hash) return;
 
-        document.getElementById(hash)?.scrollIntoView({
-          block: 'start',
-          behavior: 'instant',
-        });
+        const target = resolveHashScrollTarget(hash);
+        if (typeof target === 'number') {
+          window.scrollTo({ top: target, behavior: 'instant' });
+        } else {
+          target?.scrollIntoView({
+            block: 'start',
+            behavior: 'instant',
+          });
+        }
+        ScrollTrigger.update();
       };
 
       const scheduleHashScroll = () => {
@@ -90,6 +127,11 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       const settleTimeout = window.setTimeout(scheduleHashScroll, 720);
 
       window.addEventListener('hashchange', scheduleHashScroll);
+      window.addEventListener('popstate', scheduleHashScroll);
+      const handlePageShow = (event: PageTransitionEvent) => {
+        if (event.persisted) scheduleHashScroll();
+      };
+      window.addEventListener('pageshow', handlePageShow);
 
       queueMicrotask(() => {
         if (!disposed) setIsReady(true);
@@ -97,6 +139,8 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
       return () => {
         window.removeEventListener('hashchange', scheduleHashScroll);
+        window.removeEventListener('popstate', scheduleHashScroll);
+        window.removeEventListener('pageshow', handlePageShow);
         window.clearTimeout(refreshTimeout);
         window.clearTimeout(settleTimeout);
         if (hashFrame !== undefined) {
@@ -105,7 +149,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       };
     };
 
-    if (motionProfile !== 'full') {
+    if (motionPreference === 'reduced') {
       const cleanup = setupNativeScrolling();
 
       return () => {
@@ -123,6 +167,8 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         const lenis = new Lenis({
           autoRaf: false,
           anchors: true,
+          autoResize: true,
+          respectReducedMotion: true,
           smoothWheel: true,
           syncTouch: true,
           syncTouchLerp: 0.075,
@@ -147,14 +193,15 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
           const hash = decodeURIComponent(window.location.hash.slice(1));
           if (!hash) return;
 
-          const target = document.getElementById(hash);
-          if (!target) return;
-
           lenis.resize();
           scheduleScrollRefresh();
           hashFrame = window.requestAnimationFrame(() => {
             hashFrame = undefined;
+            const target = resolveHashScrollTarget(hash);
+            if (target === null) return;
+
             lenis.scrollTo(target, { force: true, immediate: true });
+            ScrollTrigger.update();
           });
         };
 
@@ -197,6 +244,12 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         window.addEventListener('orientationchange', scheduleRefresh, {
           passive: true,
         });
+        window.addEventListener('hashchange', scheduleHashScroll);
+        window.addEventListener('popstate', scheduleHashScroll);
+        const handlePageShow = (event: PageTransitionEvent) => {
+          if (event.persisted) scheduleHashScroll();
+        };
+        window.addEventListener('pageshow', handlePageShow);
 
         if (document.readyState === 'complete') {
           scheduleRefresh();
@@ -223,6 +276,9 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
           window.removeEventListener('load', scheduleRefresh);
           window.removeEventListener('resize', scheduleRefresh);
           window.removeEventListener('orientationchange', scheduleRefresh);
+          window.removeEventListener('hashchange', scheduleHashScroll);
+          window.removeEventListener('popstate', scheduleHashScroll);
+          window.removeEventListener('pageshow', handlePageShow);
           window.clearTimeout(refreshTimeout);
           window.clearTimeout(initialHashTimeout);
           window.clearTimeout(settledHashTimeout);
@@ -249,7 +305,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       disposed = true;
       cleanup?.();
     };
-  }, [motionProfile]);
+  }, [motionPreference]);
 
   return (
     <SmoothScrollContext.Provider value={contextValue}>
