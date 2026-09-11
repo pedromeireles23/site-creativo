@@ -2204,12 +2204,12 @@
 
 @media (max-width: 1023px) {
   .heroSequence {
-    min-height: 180svh;
+    min-height: 200svh;
   }
 
   .hero {
-    position: sticky;
-    top: 0;
+    position: relative;
+    top: auto;
   }
 
   .heroTransitionBridge {
@@ -2224,42 +2224,11 @@
       rgb(243 240 231 / 90%) 66%,
       var(--ivory-50) 84%
     );
-    visibility: hidden;
-    opacity: 0;
-    transform: translate3d(0, 18%, 0);
-    transform-origin: center bottom;
   }
 
   .heroTransitionMist {
     object-position: 54% bottom;
     filter: saturate(0.62) brightness(1.1);
-  }
-
-  .heroExitMist {
-    position: absolute;
-    z-index: 6;
-    right: -18%;
-    bottom: -4svh;
-    left: -18%;
-    display: block;
-    height: 34svh;
-    background:
-      radial-gradient(
-        ellipse at 24% 78%,
-        rgb(243 240 231 / 96%) 0%,
-        rgb(220 231 223 / 72%) 36%,
-        transparent 70%
-      ),
-      radial-gradient(
-        ellipse at 76% 82%,
-        rgb(243 240 231 / 92%) 0%,
-        rgb(220 231 223 / 58%) 42%,
-        transparent 72%
-      ),
-      linear-gradient(0deg, var(--ivory-50) 0%, transparent 82%);
-    filter: blur(16px);
-    opacity: 0;
-    pointer-events: none;
   }
 
   .grid {
@@ -2271,12 +2240,12 @@
   }
 
   .heroTitle {
-    z-index: 6;
+    z-index: 4;
     right: auto;
     bottom: 4svh;
     left: 50%;
     width: max-content;
-    max-width: calc(100vw - 2rem);
+    max-width: none;
     font-size: clamp(4.5rem, 20vw, 6.25rem);
     line-height: 0.94;
     white-space: nowrap;
@@ -2286,6 +2255,14 @@
   .heroForest {
     object-position: 50% center;
     transform-origin: 50% 72%;
+  }
+
+  .heroForestMid {
+    z-index: 5;
+  }
+
+  .heroForestFront {
+    z-index: 5;
   }
 
   .heroIntro {

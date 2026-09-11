@@ -8,7 +8,6 @@ import { MOTION_QUERIES, useMotionProfile } from '@/hooks/use-motion-profile';
 import {
   gsap,
   scheduleScrollRefresh,
-  ScrollTrigger,
   useGSAP,
 } from '@/lib/gsap';
 
@@ -45,7 +44,6 @@ export function HeroExperience() {
       const shade = hero.querySelector<HTMLElement>('[data-hero-shade]');
       const atmosphericMist =
         hero.querySelector<HTMLElement>('[data-hero-mist]');
-      const exitMist = hero.querySelector<HTMLElement>('[data-hero-exit-mist]');
       const midForest = hero.querySelector<HTMLElement>('[data-forest-mid]');
       const frontForest = hero.querySelector<HTMLElement>(
         '[data-forest-front]',
@@ -79,7 +77,6 @@ export function HeroExperience() {
         !background ||
         !shade ||
         !atmosphericMist ||
-        !exitMist ||
         !midForest ||
         !frontForest ||
         !transitionPlane ||
@@ -193,19 +190,18 @@ export function HeroExperience() {
           if (reduce) return;
 
           if (compact) {
-            gsap.set(intro, { xPercent: -50 });
             gsap.set(title, {
-              xPercent: -50,
               scaleX: 0.82,
               transformOrigin: '50% 100%',
+              filter: 'blur(0px)',
             });
-            gsap.set(midForest, { yPercent: 112, scale: 1.06 });
-            gsap.set(frontForest, { yPercent: 114, scale: 1.08 });
-            gsap.set(exitMist, { autoAlpha: 0, yPercent: 28 });
+            gsap.set(midForest, { y: 0, yPercent: 100, scale: 1 });
+            gsap.set(frontForest, { y: 0, yPercent: 100, scale: 1 });
             gsap.set(transitionPlane, {
-              rotationX: 0,
-              autoAlpha: 0,
-              yPercent: 18,
+              rotationX: 90,
+              autoAlpha: 1,
+              y: 0,
+              yPercent: 0,
             });
             gsap.set(textReveal, {
               autoAlpha: 1,
@@ -213,113 +209,53 @@ export function HeroExperience() {
               '--mask-position': '-40%',
             });
 
-            let heroTimeline: gsap.core.Timeline | undefined;
-
-            const buildHeroTimeline = () => {
-              heroTimeline = gsap.timeline({
-                defaults: { ease: 'none' },
-                scrollTrigger: {
-                  trigger: hero,
-                  start: 'top top',
-                  end: () =>
-                    `+=${Math.max(
-                      window.innerHeight * 0.5,
-                      hero.offsetHeight - window.innerHeight,
-                    )}`,
-                  scrub: 0.18,
-                  invalidateOnRefresh: true,
-                },
-              });
-
-              heroTimeline
-                .fromTo(background, { scale: 1.035 }, { scale: 1.075 }, 0)
-                .fromTo(
-                  atmosphericMist,
-                  { yPercent: 0, autoAlpha: 1 },
-                  { yPercent: -13, autoAlpha: 0.68 },
-                  0,
-                )
-                .fromTo(
-                  intro,
-                  { y: 0, autoAlpha: 1 },
-                  { y: -18, autoAlpha: 0, duration: 0.3 },
-                  0.18,
-                )
-                .fromTo(
-                  cue,
-                  { y: 0, autoAlpha: 1 },
-                  { y: -12, autoAlpha: 0, duration: 0.26 },
-                  0.28,
-                )
-                .fromTo(
-                  title,
-                  { y: 0, autoAlpha: 1 },
-                  { y: '-8svh', autoAlpha: 0, duration: 0.5 },
-                  0.34,
-                )
-                .fromTo(
-                  midForest,
-                  { yPercent: 112, scale: 1.06 },
-                  { yPercent: -34, scale: 1.16, duration: 0.76 },
-                  0.18,
-                )
-                .fromTo(
-                  frontForest,
-                  { yPercent: 114, scale: 1.08 },
-                  { yPercent: -12, scale: 1.18, duration: 0.64 },
-                  0.34,
-                )
-                .fromTo(
-                  exitMist,
-                  { yPercent: 28, autoAlpha: 0 },
-                  { yPercent: 0, autoAlpha: 1, duration: 0.34 },
-                  0.7,
-                )
-                .to(
-                  transitionPlane,
-                  { yPercent: 0, autoAlpha: 1, duration: 0.32 },
-                  0.68,
-                );
-
-              ScrollTrigger.refresh();
-              ScrollTrigger.update();
-            };
-
-            const entryTimeline = gsap.timeline({
-              defaults: { ease: 'power3.out' },
-              onComplete: buildHeroTimeline,
+            const heroTimeline = gsap.timeline({
+              defaults: { duration: 1, ease: 'none' },
+              scrollTrigger: {
+                trigger: hero,
+                start: 'top top',
+                end: 'bottom top',
+                scrub: true,
+                pin: pinnedHero,
+                pinSpacing: false,
+                anticipatePin: 1,
+                invalidateOnRefresh: true,
+              },
             });
 
-            entryTimeline
+            heroTimeline
               .fromTo(
                 background,
-                { scale: 1.09 },
-                { scale: 1.035, duration: 1.15 },
+                { scale: 1.025, yPercent: 0 },
+                { scale: 1.075, yPercent: -2.5 },
+                0,
+              )
+              .to(shade, { opacity: 0.42 }, 0)
+              .to(
+                atmosphericMist,
+                { xPercent: 6, yPercent: -16, scale: 1.14 },
+                0,
+              )
+              .to(title, { y: '-60svh', filter: 'blur(10px)' }, 0)
+              .to(intro, { yPercent: -38, opacity: 0, duration: 0.3 }, 0.52)
+              .to(cue, { opacity: 0, duration: 0.24 }, 0.48)
+              .fromTo(
+                midForest,
+                { y: 0, yPercent: 100 },
+                { y: 0, yPercent: -80 },
                 0,
               )
               .fromTo(
-                atmosphericMist,
-                { autoAlpha: 0, yPercent: 8 },
-                { autoAlpha: 1, yPercent: 0, duration: 0.9 },
-                0.05,
+                frontForest,
+                { y: 0, yPercent: 100 },
+                { y: 0, yPercent: -10 },
+                0,
               )
               .fromTo(
-                intro,
-                { autoAlpha: 0, y: 18 },
-                { autoAlpha: 1, y: 0, duration: 0.65 },
-                0.18,
-              )
-              .fromTo(
-                title,
-                { autoAlpha: 0, y: 30 },
-                { autoAlpha: 1, y: 0, duration: 0.72 },
-                0.28,
-              )
-              .fromTo(
-                cue,
-                { autoAlpha: 0, y: 14 },
-                { autoAlpha: 1, y: 0, duration: 0.58 },
-                0.44,
+                transitionPlane,
+                { rotationX: 90 },
+                { rotationX: 0, duration: 0.35 },
+                0.4,
               );
 
             const chapterReveal = gsap.from(breathChapter, {
@@ -390,8 +326,7 @@ export function HeroExperience() {
             }
 
             return () => {
-              entryTimeline.kill();
-              heroTimeline?.kill();
+              heroTimeline.kill();
               chapterReveal.kill();
               copyReveal.kill();
               kickerReveal.kill();

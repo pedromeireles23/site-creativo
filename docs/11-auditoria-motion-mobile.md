@@ -573,6 +573,49 @@ O Lenis estava ativo e sincronizado durante a falha. Portanto, o problema não e
 - **P1 continuidade Onça → Arara → Inteiro → Silêncio: encerrado novamente**, agora com camadas compartilhadas, máscaras feathered, teste de reversão e evidência nos três breakpoints.
 - Continuam pendentes somente a validação física em Safari iPhone, Chrome Android e 1024 × 768 com `pointer: coarse` real.
 
+## Correção do hero mobile — réplica da mecânica de referência — 11 de setembro de 2026
+
+### Retificação da tentativa anterior
+
+A primeira correção compacta adicionou duas névoas artificiais, atrasou a criação do `ScrollTrigger` até o fim da animação de entrada e substituiu a dobra final por uma translação opaca. O resultado não correspondia à referência: “AMAZÔNIA” podia desaparecer e o Lenis ficava dessincronizado quando o usuário começava a rolar durante a entrada. Essa implementação foi removida.
+
+### Mecânica confirmada na referência
+
+A inspeção do hero da White Desert em `390 × 844` mostrou uma composição mais simples:
+
+- o contêiner da cena mede `200vh`;
+- o quadro interno de `100vh` permanece pinado por todo o contêiner, com `pinSpacing: false`;
+- o título nunca anima `opacity`: percorre `0 → -60svh` e `blur(0 → 10px)`;
+- as duas camadas de nuvem percorrem, simultaneamente, `100% → -80%` e `100% → -10%`;
+- o plano de transição parte de `rotateX(90deg)` e chega a `rotateX(0deg)`, iniciando em `40%` da timeline e durando `35%` dela.
+
+Em metade do percurso (`scrollY = 844`), a referência apresentava título em `opacity: 1` e `blur(5px)`, primeira camada em `10%`, segunda em `45%` e dobra em aproximadamente `64.3deg`.
+
+### Implementação aplicada
+
+- A timeline compacta agora usa diretamente a mesma duração, pinagem e progressões da referência e da timeline wide existente no projeto.
+- A timeline é criada assim que Lenis está pronto; não existe mais uma animação de entrada bloqueando o registro do `ScrollTrigger`.
+- As névoas extras foram excluídas. Permanecem somente os dois recortes de floresta existentes e o plano de transição em perspectiva.
+- Os recortes zeram explicitamente o componente `y` antes de animar `yPercent`, evitando a soma com o `translateY(100%)` do CSS.
+- “AMAZÔNIA” mantém `opacity: 1`; seu desaparecimento visual acontece por deslocamento, blur e oclusão pelas camadas superiores.
+- O título conserva a correção de centralização: largura intrínseca, `left: 50%` e um único `translateX(-50%)`.
+
+### Revalidação
+
+| Viewport | Resultado | Evidência principal |
+|---|---|---|
+| 375 × 812 | Aprovado | Título visível no carregamento, margens geométricas idênticas de `33.05px`, hero com `1624px` (`200vh`) e nenhum overflow horizontal. |
+| 390 × 844 | Aprovado | Margens de `34.48px` e `34.26px`. Em `scrollY = 844`, os valores de título, florestas e dobra coincidem com a referência; `scrollWidth = clientWidth = 390`. |
+| 390 × 844, retorno | Aprovado | Ao inverter o scroll, título retorna a `blur(0px)` e `opacity: 1`; as duas florestas retornam a `100%`, sem salto ou travamento. |
+
+O encerramento libera o hero e apresenta Fôlego normalmente. `npm run lint` e `npm run build` também foram concluídos sem erro de projeto. A validação em navegador registrou apenas interferências de uma extensão instalada no Chrome, sem erro de runtime originado pela aplicação.
+
+### Status
+
+- **P1 centralização de “AMAZÔNIA”: encerrado** nos viewports de telefone revalidados.
+- **P1 réplica da transição do hero: encerrado** no escopo visual assistido.
+- Permanece pendente a validação física em Safari iPhone e Chrome Android.
+
 ## Fontes
 
 [^1]: [White Desert — site de referência](https://white-desert.com/), inspeção visual de desktop e mobile em 10 de setembro de 2026.
