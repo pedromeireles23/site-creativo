@@ -51,7 +51,7 @@ const fauna = [
     scientificName: 'Harpia harpyja',
     copy: 'Do alto, a floresta revela sua escala.',
     image: '/images/fauna/harpia-amazonia.png',
-    position: 'center center',
+    position: 'center 24%',
   },
 ];
 

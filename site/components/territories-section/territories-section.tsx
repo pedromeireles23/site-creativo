@@ -62,6 +62,9 @@ export function TerritoriesSection() {
       const texture = section.querySelector<HTMLElement>(
         '[data-territory-texture]',
       );
+      const finalBackground = section.querySelector<HTMLElement>(
+        '[data-territory-final-background]',
+      );
       const revealRects = gsap.utils.toArray<SVGRectElement>(
         '[data-territory-reveal-strip]',
         section,
@@ -92,6 +95,7 @@ export function TerritoriesSection() {
         !openingImage ||
         !heading ||
         !texture ||
+        !finalBackground ||
         !track ||
         !finale ||
         !finaleText ||
@@ -125,6 +129,9 @@ export function TerritoriesSection() {
         gsap.set(texture, { clipPath: 'inset(0% 0% 0% 0%)' });
         gsap.set(cards, { y: 0, autoAlpha: 1 });
         gsap.set(finaleText, { x: compact ? 24 : 56, autoAlpha: 0 });
+        if (!compact) {
+          gsap.set(finalBackground, { autoAlpha: 1 });
+        }
         gsap.set(hint, { autoAlpha: 0 });
 
         const timeline = gsap.timeline({
@@ -193,6 +200,25 @@ export function TerritoriesSection() {
             `-=${0.24 * horizontalDuration}`,
           );
 
+        const backgroundHandoff =
+          !compact && nextSection
+            ? gsap.fromTo(
+                finalBackground,
+                { autoAlpha: 1 },
+                {
+                  autoAlpha: 0,
+                  ease: 'none',
+                  scrollTrigger: {
+                    trigger: nextSection,
+                    start: 'top bottom',
+                    end: 'top bottom-=2',
+                    scrub: true,
+                    invalidateOnRefresh: true,
+                  },
+                },
+              )
+            : null;
+
         const wipeTrigger = {
           trigger: lastCard,
           start: 'right-=30% right',
@@ -230,7 +256,7 @@ export function TerritoriesSection() {
         );
 
         const nextFogReveal =
-          nextSection && nextFog
+          compact && nextSection && nextFog
             ? gsap.fromTo(
                 nextFog,
                 { yPercent: 8, autoAlpha: 1 },
@@ -251,6 +277,7 @@ export function TerritoriesSection() {
         return () => {
           backgroundWipe.kill();
           finaleReveal.kill();
+          backgroundHandoff?.kill();
           nextFogReveal?.kill();
           timeline.kill();
         };
@@ -364,7 +391,11 @@ export function TerritoriesSection() {
       data-header-theme="dark"
     >
       <div className={styles.territoryStage} data-territory-stage>
-        <div className={styles.territoryFinalBackground} aria-hidden="true">
+        <div
+          className={styles.territoryFinalBackground}
+          data-territory-final-background
+          aria-hidden="true"
+        >
           <Image
             className={styles.territoryFinalBackgroundImage}
             src="/images/territorios/territorios-transicao-final.png"

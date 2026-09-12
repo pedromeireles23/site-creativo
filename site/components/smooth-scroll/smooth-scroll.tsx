@@ -14,18 +14,25 @@ import { useMotionCapabilities } from '@/hooks/use-motion-profile';
 import { gsap, scheduleScrollRefresh, ScrollTrigger } from '@/lib/gsap';
 
 type SmoothScrollController = {
+  resize: () => void;
+  scrollTo: (
+    target: number | HTMLElement,
+    options: { force: boolean; immediate: boolean },
+  ) => void;
   start: () => void;
   stop: () => void;
 };
 
 type SmoothScrollContextValue = {
   isReady: boolean;
+  navigateToHash: (hash: string) => void;
   pause: () => void;
   resume: () => void;
 };
 
 const SmoothScrollContext = createContext<SmoothScrollContextValue>({
   isReady: true,
+  navigateToHash: () => undefined,
   pause: () => undefined,
   resume: () => undefined,
 });
@@ -48,8 +55,7 @@ const resolveHashScrollTarget = (hash: string) => {
       );
     })
     .sort(
-      (first, second) =>
-        second.end - second.start - (first.end - first.start),
+      (first, second) => second.end - second.start - (first.end - first.start),
     )[0];
 
   if (!pinnedTrigger) return target;
@@ -85,9 +91,46 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     controllerRef.current?.start();
   }, []);
 
+  const navigateToHash = useCallback((hash: string) => {
+    const normalizedHash = decodeURIComponent(hash.replace(/^#/, ''));
+    if (!normalizedHash) return;
+
+    const encodedHash = `#${encodeURIComponent(normalizedHash)}`;
+    if (window.location.hash === encodedHash) {
+      window.history.replaceState(null, '', encodedHash);
+    } else {
+      window.history.pushState(null, '', encodedHash);
+    }
+
+    window.requestAnimationFrame(() => {
+      const controller = controllerRef.current;
+
+      if (!controller) {
+        const target = resolveHashScrollTarget(normalizedHash);
+        if (typeof target === 'number') {
+          window.scrollTo({ top: target, behavior: 'instant' });
+        } else {
+          target?.scrollIntoView({ block: 'start', behavior: 'instant' });
+        }
+        ScrollTrigger.update();
+        return;
+      }
+
+      controller.resize();
+      scheduleScrollRefresh();
+      window.requestAnimationFrame(() => {
+        const target = resolveHashScrollTarget(normalizedHash);
+        if (target === null) return;
+
+        controller.scrollTo(target, { force: true, immediate: true });
+        ScrollTrigger.update();
+      });
+    });
+  }, []);
+
   const contextValue = useMemo(
-    () => ({ isReady, pause, resume }),
-    [isReady, pause, resume],
+    () => ({ isReady, navigateToHash, pause, resume }),
+    [isReady, navigateToHash, pause, resume],
   );
 
   useLayoutEffect(() => {

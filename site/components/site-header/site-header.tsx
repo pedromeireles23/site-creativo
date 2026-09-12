@@ -1,23 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
 import { useMotionProfile } from '@/hooks/use-motion-profile';
 import { gsap } from '@/lib/gsap';
 import { chapters, menuGroups, type MenuKey } from './site-menu-data';
+import { SiteMenu } from './site-menu';
 import styles from './site-header.module.scss';
-
-const SiteMenu = dynamic(
-  () => import('./site-menu').then((module) => module.SiteMenu),
-  {
-    loading: () => <div className={styles.dialogShell} aria-hidden="true" />,
-    ssr: false,
-  },
-);
-
-const preloadSiteMenu = () => {
-  void import('./site-menu');
-};
 
 type HeaderTheme = 'dark' | 'light';
 
@@ -26,7 +14,6 @@ export function SiteHeader() {
   const lastTriggerRef = useRef<HTMLElement | null>(null);
   const headerThemeRef = useRef<HeaderTheme>('dark');
   const currentChapterRef = useRef('despertar');
-  const [menuMounted, setMenuMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<MenuKey>('index');
   const [headerTheme, setHeaderTheme] = useState<HeaderTheme>('dark');
@@ -36,13 +23,14 @@ export function SiteHeader() {
   const openMenu = (menu: MenuKey, trigger: HTMLElement) => {
     lastTriggerRef.current = trigger;
     setActiveMenu(menu);
-    setMenuMounted(true);
     setMenuOpen(true);
   };
 
   const closeMenu = () => {
     setMenuOpen(false);
-    window.requestAnimationFrame(() => lastTriggerRef.current?.focus());
+    window.requestAnimationFrame(() =>
+      lastTriggerRef.current?.focus({ preventScroll: true }),
+    );
   };
 
   useEffect(() => {
@@ -139,6 +127,7 @@ export function SiteHeader() {
       <header
         className={styles.header}
         data-menu-open={menuOpen}
+        data-page-theme={headerTheme}
         data-theme={menuOpen ? 'light' : headerTheme}
         ref={headerRef}
       >
@@ -152,9 +141,6 @@ export function SiteHeader() {
                   type="button"
                   aria-haspopup="dialog"
                   aria-expanded={menuOpen && activeMenu === key}
-                  onPointerEnter={preloadSiteMenu}
-                  onPointerDown={preloadSiteMenu}
-                  onFocus={preloadSiteMenu}
                   onClick={(event) => openMenu(key, event.currentTarget)}
                   key={key}
                 >
@@ -170,9 +156,6 @@ export function SiteHeader() {
               type="button"
               aria-haspopup="dialog"
               aria-expanded={menuOpen}
-              onPointerEnter={preloadSiteMenu}
-              onPointerDown={preloadSiteMenu}
-              onFocus={preloadSiteMenu}
               onClick={(event) => openMenu('index', event.currentTarget)}
             >
               Menu
@@ -213,15 +196,13 @@ export function SiteHeader() {
         </output>
       </header>
 
-      {menuMounted && (
-        <SiteMenu
-          activeMenu={activeMenu}
-          currentChapter={currentChapter}
-          onActiveMenuChange={setActiveMenu}
-          onClose={closeMenu}
-          open={menuOpen}
-        />
-      )}
+      <SiteMenu
+        activeMenu={activeMenu}
+        currentChapter={currentChapter}
+        onActiveMenuChange={setActiveMenu}
+        onClose={closeMenu}
+        open={menuOpen}
+      />
     </>
   );
 }

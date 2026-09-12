@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { HeroExperience } from '@/components/hero-experience/hero-experience';
 import { CustomCursor } from '@/components/custom-cursor/custom-cursor';
 import { FaunaSection } from '@/components/fauna-section/fauna-section';
@@ -34,11 +35,27 @@ export default function Home() {
 
         <FaunaSection />
 
-        <TerritoriesSection />
+        <div className={styles.territoryJourney}>
+          <div className={styles.territoryJourneyBackground} aria-hidden="true">
+            <div className={styles.territoryJourneyBackgroundVisual}>
+              <Image
+                className={styles.territoryJourneyBackgroundImage}
+                src="/images/territorios/territorios-transicao-final.png"
+                alt=""
+                fill
+                sizes="100vw"
+              />
+              <span className={styles.territoryJourneyShade} />
+              <span className={styles.territoryJourneyMist} />
+            </div>
+          </div>
 
-        <MapTrailSection>
-          <JaguarSection />
-        </MapTrailSection>
+          <TerritoriesSection />
+
+          <MapTrailSection>
+            <JaguarSection />
+          </MapTrailSection>
+        </div>
 
         <MacawSection />
 

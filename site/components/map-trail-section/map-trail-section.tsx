@@ -32,14 +32,26 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
 
       const stage = section.querySelector<HTMLElement>('[data-map-stage]');
       const intro = section.querySelector<HTMLElement>('[data-map-intro]');
+      const introText = section.querySelector<HTMLElement>(
+        '[data-map-intro-text]',
+      );
       const mapLayout = section.querySelector<HTMLElement>('[data-map-layout]');
       const mapFigure = section.querySelector<HTMLElement>('[data-map-figure]');
       const trail = section.querySelector<SVGPathElement>('[data-map-trail]');
       const carryover = section.querySelector<HTMLElement>(
         '[data-map-carryover]',
       );
+      const underlay = section.querySelector<HTMLElement>(
+        '[data-map-underlay]',
+      );
+      const atmosphere = section.querySelector<HTMLElement>(
+        '[data-map-atmosphere]',
+      );
       const entryFog = section.querySelector<HTMLElement>(
         '[data-territory-next-fog]',
+      );
+      const fogPlane = section.querySelector<HTMLElement>(
+        '[data-map-fog-plane]',
       );
       const jaguarReveal = section.querySelector<HTMLElement>(
         '[data-map-jaguar-reveal]',
@@ -73,11 +85,15 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
       if (
         !stage ||
         !intro ||
+        !introText ||
         !mapLayout ||
         !mapFigure ||
         !trail ||
         !carryover ||
+        !underlay ||
+        !atmosphere ||
         !entryFog ||
+        !fogPlane ||
         !jaguarReveal ||
         !jaguarImage ||
         !jaguarEyeImage ||
@@ -103,23 +119,134 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
       const jaguarVisuals = [jaguarImage, jaguarEyeImage];
 
       const updateHeader = (progress: number) => {
-        const isJaguarVisible = progress >= 0.3;
-        section.dataset.headerTheme = isJaguarVisible ? 'dark' : 'light';
+        const isMapVisible = progress < 0.48;
+        const isJaguarVisible = progress >= 0.48;
+        section.dataset.headerTheme = isMapVisible ? 'light' : 'dark';
         section.dataset.headerChapter = isJaguarVisible
           ? 'olhos'
           : 'territorios';
       };
 
-      media.add(MOTION_QUERIES.cinematic, () => {
-        const compact = window.matchMedia(MOTION_QUERIES.compact).matches;
+      media.add(MOTION_QUERIES.wide, () => {
+        gsap.set(intro, { clearProps: 'all' });
+        gsap.set(introText, { opacity: 1 });
+        gsap.set(fogPlane, { autoAlpha: 1, rotateX: 0 });
+        gsap.set(mapLayout, { autoAlpha: 1, yPercent: 0 });
+        gsap.set(mapFigure, { scale: 1, xPercent: 0, yPercent: 0 });
+        gsap.set(labels, { autoAlpha: 0, y: 12 });
+        gsap.set(carryover, { autoAlpha: 0, scale: 1 });
+        gsap.set([underlay, atmosphere], { autoAlpha: 1 });
+        gsap.set(jaguarReveal, { y: 0, yPercent: 102 });
+        gsap.set(jaguarVisuals, { scale: 1.12 });
+        gsap.set(jaguarEyes, { autoAlpha: 0 });
+        gsap.set(jaguarVeil, { autoAlpha: 0.86 });
+        gsap.set(jaguarGhost, { autoAlpha: 0, xPercent: -3 });
+        gsap.set(jaguarLines, { yPercent: 115 });
+        gsap.set(jaguarMeta, { autoAlpha: 0, y: 18 });
 
-        gsap.set(intro, { autoAlpha: 0, y: compact ? 24 : 32 });
+        const titleMotion = gsap.fromTo(
+          intro,
+          { y: '0svh' },
+          {
+            y: '120svh',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: intro,
+              start: 'center center',
+              endTrigger: entryFog,
+              end: 'bottom top',
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          },
+        );
+
+        const titleFade = gsap.fromTo(
+          introText,
+          { opacity: 1 },
+          {
+            opacity: 0.5,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: intro,
+              start: 'center center',
+              endTrigger: entryFog,
+              end: 'bottom top',
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          },
+        );
+
+        const timeline = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: stage,
+            start: 'top top',
+            end: () => '+=' + window.innerHeight * 3.25,
+            pin: stage,
+            scrub: true,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => updateHeader(self.progress),
+          },
+        });
+
+        timeline
+          .to({}, { duration: 0.3 })
+          .to(trail, { strokeDashoffset: 0, duration: 0.56 }, 0.3)
+          .to(
+            labels,
+            { autoAlpha: 1, y: 0, stagger: 0.045, duration: 0.2 },
+            0.52,
+          )
+          .to({}, { duration: 0.36 }, 0.74)
+          .to(
+            mapFigure,
+            {
+              scale: 1.52,
+              xPercent: 13,
+              yPercent: 15,
+              transformOrigin: '35% 25%',
+              duration: 0.48,
+            },
+            1.1,
+          )
+          .to(jaguarReveal, { yPercent: 0, duration: 0.42 }, 1.32)
+          .to(jaguarVisuals, { scale: 1, duration: 0.72 }, 1.42)
+          .to(jaguarEyes, { autoAlpha: 1, duration: 0.16 }, 1.46)
+          .to(jaguarVeil, { autoAlpha: 0.12, duration: 0.46 }, 1.52)
+          .to(jaguarGhost, { autoAlpha: 1, xPercent: 0, duration: 0.28 }, 1.66)
+          .to(
+            jaguarMeta,
+            { autoAlpha: 1, y: 0, stagger: 0.04, duration: 0.18 },
+            1.7,
+          )
+          .to(
+            jaguarLines,
+            { yPercent: 0, stagger: 0.075, duration: 0.22 },
+            1.74,
+          )
+          .to(jaguarEyes, { autoAlpha: 0, duration: 0.18 }, 1.98)
+          .to({}, { duration: 0.82 }, 2.16);
+
+        return () => {
+          titleMotion.kill();
+          titleFade.kill();
+          timeline.kill();
+        };
+      });
+
+      media.add(MOTION_QUERIES.compactCinematic, () => {
+        gsap.set(intro, { autoAlpha: 0, y: 24 });
+        gsap.set(introText, { opacity: 1 });
+        gsap.set(fogPlane, { autoAlpha: 1, rotateX: 0 });
         gsap.set(mapLayout, { autoAlpha: 0 });
-        gsap.set(mapFigure, { scale: compact ? 0.92 : 0.84 });
+        gsap.set(mapFigure, { scale: 0.92 });
         gsap.set(labels, { autoAlpha: 0, y: 12 });
         gsap.set(carryover, { autoAlpha: 1, scale: 1.015 });
+        gsap.set([underlay, atmosphere], { autoAlpha: 1 });
         gsap.set(jaguarReveal, { y: 0, yPercent: 102 });
-        gsap.set(jaguarVisuals, { scale: compact ? 1.08 : 1.12 });
+        gsap.set(jaguarVisuals, { scale: 1.08 });
         gsap.set(jaguarEyes, { autoAlpha: 0 });
         gsap.set(jaguarVeil, { autoAlpha: 0.86 });
         gsap.set(jaguarGhost, { autoAlpha: 0, xPercent: -3 });
@@ -143,9 +270,9 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
           scrollTrigger: {
             trigger: section,
             start: 'top top',
-            end: () => '+=' + window.innerHeight * (compact ? 2.15 : 2.5),
+            end: () => '+=' + window.innerHeight * 2.15,
             pin: section,
-            scrub: compact ? 0.2 : true,
+            scrub: 0.2,
             invalidateOnRefresh: true,
             onUpdate: (self) => updateHeader(self.progress),
           },
@@ -166,9 +293,9 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
           .to(
             mapFigure,
             {
-              scale: compact ? 1.2 : 1.52,
-              xPercent: compact ? 5 : 13,
-              yPercent: compact ? 6 : 15,
+              scale: 1.2,
+              xPercent: 5,
+              yPercent: 6,
               transformOrigin: '35% 25%',
               duration: 0.28,
             },
@@ -205,7 +332,10 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
         gsap.set(mapFigure, { scale: 1 });
         gsap.set(labels, { autoAlpha: 1, y: 0 });
         gsap.set(carryover, { autoAlpha: 0 });
+        gsap.set([underlay, atmosphere], { autoAlpha: 1 });
         gsap.set(entryFog, { autoAlpha: 1, yPercent: 0 });
+        gsap.set(introText, { opacity: 1 });
+        gsap.set(fogPlane, { autoAlpha: 1, rotateX: 0 });
         gsap.set(jaguarVisuals, { scale: 1 });
         gsap.set(jaguarEyes, { autoAlpha: 0.28 });
         gsap.set(jaguarVeil, { autoAlpha: 0.18 });
@@ -322,14 +452,28 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
       ref={sectionRef}
       className={styles.mapTrail}
       aria-labelledby="map-trail-title"
-      data-header-theme="light"
+      data-header-theme="dark"
       data-header-chapter="territorios"
     >
-      <div
-        className={styles.mapEntryFog}
-        data-territory-next-fog
-        aria-hidden="true"
-      />
+      <div className={styles.mapTransitionFlow}>
+        <div className={styles.mapTrailIntro} data-map-intro>
+          <div className={styles.mapTrailIntroText} data-map-intro-text>
+            <p>Do mapa à mata</p>
+            <h2 id="map-trail-title">
+              O mapa termina.
+              <em>O rastro continua.</em>
+            </h2>
+          </div>
+        </div>
+
+        <div
+          className={styles.mapEntryFog}
+          data-territory-next-fog
+          aria-hidden="true"
+        >
+          <div className={styles.mapEntryFogPlane} data-map-fog-plane />
+        </div>
+      </div>
 
       <div className={styles.mapTrailStage} data-map-stage>
         <div
@@ -347,20 +491,32 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
           <span />
         </div>
 
-        <div className={styles.mapAtmosphere} aria-hidden="true">
-          <span />
-          <span />
-        </div>
+        <div
+          className={styles.mapUnderlay}
+          data-map-underlay
+          aria-hidden="true"
+        />
 
-        <div className={styles.mapTrailIntro} data-map-intro>
-          <p>Do mapa à mata</p>
-          <h2 id="map-trail-title">
-            O mapa termina.
-            <em>O rastro continua.</em>
-          </h2>
+        <div
+          className={styles.mapAtmosphere}
+          data-map-atmosphere
+          aria-hidden="true"
+        >
+          <span />
+          <span />
         </div>
 
         <div className={styles.mapTrailLayout} data-map-layout>
+          <div className={styles.mapTrailCoordinates} aria-hidden="true">
+            <span>
+              03° 07&apos; S · 60° 01&apos; W<small>Margem do rio</small>
+            </span>
+            <span>
+              02° 36&apos; S · 60° 14&apos; W
+              <small>Floresta de terra firme</small>
+            </span>
+          </div>
+
           <header className={styles.mapTrailCopy}>
             <p>Cartografia da mata · corredor invisível</p>
             <h3>A floresta desenha caminhos que os olhos não veem.</h3>

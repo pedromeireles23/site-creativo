@@ -616,6 +616,97 @@ O encerramento libera o hero e apresenta Fôlego normalmente. `npm run lint` e `
 - **P1 réplica da transição do hero: encerrado** no escopo visual assistido.
 - Permanece pendente a validação física em Safari iPhone e Chrome Android.
 
+## Rodada — convergência do menu mobile — 11 de setembro de 2026
+
+### Recorte explícito de escopo
+
+Esta próxima rodada tratará **somente do menu ativo no mobile**, isto é, do comportamento iniciado pelo toque em `Menu` no cabeçalho. O escopo inclui abertura, estado aberto, troca entre índice e grupos, fechamento, seleção de capítulo e chegada à seção escolhida. Não inclui o menu desktop, a coreografia das seções da página, o auto-hide do cabeçalho durante o scroll nem novos ajustes do hero.
+
+O breakpoint funcional local continua sendo `max-width: 800px`. A comparação principal será feita em `390 × 844`, com revalidação em `375 × 812` e `768 × 1024` para cobrir os dois extremos do menu compacto.
+
+### Mecânica confirmada na referência
+
+A inspeção visual e do bundle público atual da White Desert mostrou que o menu mobile usa uma lógica diferente da gaveta lateral implementada localmente:[^9]
+
+- o componente permanece montado em `position: fixed`, ocupa `100dvh`, fica acima do cabeçalho com `z-index: 9998` e, fechado, usa `visibility: hidden` e `pointer-events: none`;
+- a abertura não translada o painel. O fundo branco já está em sua posição final e é revelado da esquerda para a direita por `clip-path: inset(0% 100% 0% 0%) → inset(0%)`;
+- o wipe dura `0.45s` e usa a curva personalizada equivalente a `cubic-bezier(0.76, 0, 0.24, 1)`;
+- o backdrop muda de opacidade por CSS em `0.4s`, mas não há fade, zoom ou stagger dos itens no layout mobile; o movimento percebido é o recorte único da superfície;
+- o cabeçalho original continua atrás do menu e é ocultado progressivamente pelo próprio wipe, em vez de desaparecer antes da chegada do painel;
+- `Close`, a barra de título e os dois CTAs inferiores formam uma moldura estável. O centro alterna entre o índice (`Home`, `Experience`, `Operation`, `About`) e uma tela interna rolável;
+- tocar em um grupo não expande um acordeão no mesmo fluxo. O índice é substituído pela tela do grupo, com título próprio e botão de retorno. No mobile, essa troca não recebe tween individual;
+- o fechamento também não é uma reprodução reversa do wipe. A referência mata os tweens e recoloca imediatamente o `clip-path` fechado; a raiz só perde interação e visibilidade depois;
+- ao escolher um destino, o `Link` inicia a troca de rota e um efeito dependente de `pathname` fecha o menu. O menu não adiciona uma transição intermediária nem faz o usuário percorrer visualmente o conteúdo entre origem e destino;
+- o Lenis é interrompido enquanto o menu está aberto e reiniciado ao fechar.
+
+### Comparação com a implementação local
+
+| Momento | White Desert mobile | Floresta Viva mobile atual | Diferença percebida |
+|---|---|---|---|
+| Primeiro toque | Menu já montado e apenas recortado | `SiteMenu` é carregado dinamicamente e o portal nasce depois do toque | Existe risco de um primeiro quadro vazio ou de resposta tardia no primeiro uso |
+| Abertura | Wipe por `clip-path`, `0.45s`, `cubic-bezier(0.76, 0, 0.24, 1)` | Painel em `xPercent: -102 → 0`, `0.72s`, `power4.out` | O nosso lê como gaveta que se desloca; a referência lê como uma superfície que se revela |
+| Conteúdo na entrada | Conteúdo estável por baixo do recorte | Cada `[data-menu-item]` faz `opacity: 0 → 1` e `y: 12 → 0`, com `0.42s` e stagger de `0.045s` | A entrada local se prolonga e fragmenta a atenção depois de o painel chegar |
+| Cabeçalho durante o wipe | Permanece atrás e é coberto progressivamente | A navegação recebe `visibility: hidden` assim que `menuOpen` muda; o cabeçalho tem `z-index: 180` e o shell `150` | O elemento de origem some antes de a nova camada ocupar a tela |
+| Grupo/submenu | Moldura fixa; miolo é substituído sem tween mobile | `groupChooser` sai do fluxo, título/lista mudam e todos os itens reexecutam o stagger | Há reflow e uma segunda animação que a referência não possui |
+| Fechar | `clip-path` volta imediatamente ao estado fechado; componente continua montado e não interativo | O portal é desmontado imediatamente; as classes `data-closed` não chegam a produzir uma saída perceptível | O corte visual é parecido em velocidade, mas o nosso não preserva o estado fechado nem replica o recorte |
+| Escolher destino | Fecha no commit da rota e a nova página entra no topo | O `onClick` fecha o diálogo e o link de hash é entregue ao Lenis | A navegação local mostra deslocamento pelo documento em vez de uma troca direta de destino |
+| Chegada à seção | Sem travessia visível entre páginas | No ensaio de `#folego`, o menu já havia sumido em `scrollY ≈ 384` e o destino só assentou em `scrollY ≈ 1688`, cerca de `0.8s` depois | A pessoa vê a página se movendo após o menu desaparecer, sensação ausente na referência |
+
+O bloqueio de scroll está conceitualmente correto nos dois casos: a referência para o Lenis com `data-menu-open`, e o projeto local chama `pause()`/`resume()`. A divergência principal está na propriedade animada, no excesso de animações secundárias e na coordenação entre fechamento e destino.
+
+### Mudanças propostas para convergir
+
+1. Manter a raiz do menu compacta montada após o primeiro carregamento — idealmente pré-carregada antes do primeiro toque — e separar `mounted`, `visible` e `interactive`.
+2. No mobile, substituir `xPercent` pelo wipe de `clip-path` da referência: `0.45s`, `cubic-bezier(0.76, 0, 0.24, 1)`, da esquerda para a direita.
+3. Remover no mobile o fade/zoom herdado do `Dialog.Popup` e o stagger de `[data-menu-item]`. Esses comportamentos podem continuar exclusivos do desktop se ainda forem desejados ali.
+4. Colocar o menu acima do cabeçalho e remover o `visibility: hidden` antecipado da navegação mobile, deixando o wipe cobrir o estado anterior.
+5. Reorganizar o estado ativo como duas telas internas dentro de uma moldura persistente: topo/fechar, barra de título, área central e rodapé. A seleção de `Bioma`, `Vida` ou `Travessia` deve trocar apenas título e conteúdo central, sem animar novamente toda a lista.
+6. Fechar com `gsap.set(..., { clipPath: fechado })`, cancelar qualquer tween em curso e só então retirar interação/visibilidade. Não criar uma saída longa ou simétrica, pois ela não existe na referência.
+7. Criar um manipulador único de seleção de capítulo. Ele deve impedir a navegação nativa concorrente, fechar o recorte, atualizar o hash e mandar o Lenis diretamente para o alvo resolvido, com `immediate: true`, em vez de atravessar suavemente as seções intermediárias.
+8. Preservar retorno de foco, `aria-expanded`, foco confinado, tecla Escape e o caminho sem animação de `prefers-reduced-motion`.
+
+### Critérios de aceite desta rodada
+
+- em `390 × 844`, o painel permanece geometricamente parado e somente o lado direito do `clip-path` percorre `100% → 0%` em aproximadamente `0.45s`;
+- não há fade, zoom, deslocamento horizontal do painel nem entrada escalonada de links no mobile;
+- durante a abertura, `Menu`, marca e CTA permanecem visíveis na porção ainda não coberta;
+- topo e rodapé não mudam de posição ao alternar índice ↔ grupo; a área central é a única região substituída;
+- fechar, usar Escape ou escolher um destino restaura scroll e interação sem quadro residual;
+- a seleção de um capítulo termina com o alvo em `top ≈ 0`, sem passeio visível pelas seções intermediárias e sem segundo salto corretivo;
+- `scrollWidth === clientWidth`, o scroll da página permanece bloqueado enquanto o menu está ativo e a região central longa continua rolável por toque;
+- o comportamento é reversível sob toques rápidos e não deixa tween, foco ou classe de bloqueio órfãos.
+
+### Implementação aplicada
+
+- `SiteMenu` deixou de ser um carregamento dinâmico iniciado pelo primeiro toque. O componente e o portal agora permanecem montados; quando fechados, ficam recortados, invisíveis e sem interação.
+- Em `max-width: 800px`, o painel não usa mais translação. A entrada anima somente `clip-path` durante `0.45s` com `CustomEase(0.76, 0, 0.24, 1)`, enquanto o backdrop faz sua transição de opacidade em `0.4s`.
+- O fade/zoom do shell e o stagger dos itens foram neutralizados no mobile e preservados acima do breakpoint. O cabeçalho também deixa de receber `visibility: hidden` na abertura; ele permanece atrás da superfície até ser coberto pelo wipe.
+- A composição compacta passou a ter quatro regiões persistentes: topo com `Fechar`, barra de título, centro substituível e dois CTAs inferiores. `Bioma`, `Vida` e `Travessia` trocam apenas o título e o centro, sem tween adicional.
+- O fechamento cancela o tween em curso e repõe imediatamente o recorte fechado. A visibilidade da raiz é retirada depois de `0.6s`, dando tempo para o backdrop dissipar sem produzir uma saída reversa do painel.
+- A navegação compacta ganhou um único manipulador de destino. Ele impede a rolagem nativa concorrente, fecha o menu, atualiza o hash e usa `Lenis.scrollTo(..., { immediate: true, force: true })`; no caminho sem Lenis, usa rolagem nativa instantânea.
+- O comportamento desktop acima de `800px` conserva a gaveta lateral e o stagger anteriores.
+
+### Revalidação visual e técnica
+
+| Viewport | Resultado | Evidência principal |
+|---|---|---|
+| 375 × 812 | Aprovado | A moldura inteira permanece dentro do viewport, os três grupos e os dois CTAs não geram corte lateral e o wipe conserva o cabeçalho visível na porção ainda descoberta. |
+| 390 × 844 | Aprovado | A superfície fica geometricamente parada e é revelada pelo lado direito do `clip-path`; índice → Bioma substitui somente título e centro. Ao escolher Fôlego, `#folego` e o capítulo ativo são atualizados imediatamente, sem travessia visual pelo documento. |
+| 768 × 1024 | Aprovado | O layout compacto ocupa `100dvh`, mantém topo e rodapé fixos e distribui a área central sem overflow horizontal perceptível. |
+| 1024 × 768 | Aprovado sem regressão | O menu continua no modo desktop, com gaveta lateral, largura parcial, backdrop e lista do grupo selecionado preservados. |
+
+- O fechamento foi observado logo após o clique: o painel some no primeiro quadro útil e apenas o backdrop permanece durante sua dissipação.
+- A troca de grupo não reexecuta fade, zoom, translação ou stagger no mobile.
+- Escape fechou o diálogo e devolveu o foco ao acionador. Uma sequência rápida de abrir → fechar → reabrir também terminou no estado aberto correto, sem tween órfão ou bloqueio residual.
+- `aria-expanded`, foco confinado pelo diálogo e bloqueio/reinício do Lenis foram mantidos pela estrutura controlada existente.
+- O log do navegador não registrou erro de runtime da alteração. O único erro exibido pelo overlay continua sendo o atributo `cz-shortcut-listen` injetado por uma extensão do Chrome; os avisos de LCP observados pertencem às imagens já existentes das transições da página.
+- `npm run lint`, `tsc --noEmit`, `git diff --check` e `npm run build` foram executados após a alteração.
+
+### Status final
+
+- **P1 menu mobile — encerrado no escopo visual assistido.**
+- Permanece pendente somente a validação física em Safari iPhone e Chrome Android, especialmente para barras dinâmicas do viewport, gesto de scroll na lista interna e sequência de toques muito rápidos.
+
 ## Fontes
 
 [^1]: [White Desert — site de referência](https://white-desert.com/), inspeção visual de desktop e mobile em 10 de setembro de 2026.
@@ -626,5 +717,6 @@ O encerramento libera o hero e apresenta Fôlego normalmente. `npm run lint` e `
 [^6]: [GSAP ScrollTrigger.config()](https://gsap.com/docs/v3/Plugins/ScrollTrigger/static.config%28%29/), documentação oficial de `ignoreMobileResize`.
 [^7]: [GSAP gsap.matchMedia()](https://gsap.com/docs/v3/GSAP/gsap.matchMedia%28%29/), documentação oficial sobre condições responsivas e cleanup.
 [^8]: [GSAP ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/), documentação oficial sobre pinning, scrub, horizontal scroll e `containerAnimation`.
+[^9]: [Bundle público atual do menu e do cabeçalho da White Desert](https://white-desert.com/_next/static/chunks/d2e25e0992870da6.js?dpl=dpl_A1QUEWfBmpCDUBWAU1R8wQ1mwXDJ) e [CSS público do menu](https://white-desert.com/_next/static/chunks/5dd7b716df5564d7.css?dpl=dpl_A1QUEWfBmpCDUBWAU1R8wQ1mwXDJ), inspecionados em `390 × 844` em 11 de setembro de 2026. URLs vinculadas ao deploy atual e sujeitas a mudança em publicação futura.
 
 Fontes locais principais: `site/hooks/use-motion-profile.ts`, `site/components/smooth-scroll/smooth-scroll.tsx`, componentes de Hero, Veias, Fauna, Territórios, Mapa, Arara e Epílogo, `site/app/page.module.scss` e documentos `docs/01`, `docs/05`, `docs/06`, `docs/09` e `docs/10`, todos inspecionados no working tree atual.

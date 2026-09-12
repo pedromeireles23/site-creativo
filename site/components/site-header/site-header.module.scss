@@ -100,8 +100,10 @@
   width: 7.4rem;
   height: 1.55rem;
   background: currentColor;
-  mask: url('/images/floresta-viva-mark-header-clean.png') center / contain no-repeat;
-  -webkit-mask: url('/images/floresta-viva-mark-header-clean.png') center / contain no-repeat;
+  mask: url('/images/floresta-viva-mark-header-clean.png') center / contain
+    no-repeat;
+  -webkit-mask: url('/images/floresta-viva-mark-header-clean.png') center /
+    contain no-repeat;
 }
 
 .logoText {
@@ -133,6 +135,12 @@
   overflow: hidden;
 }
 
+.dialogBackdrop {
+  position: fixed;
+  z-index: 149;
+  inset: 0;
+}
+
 .scrim {
   position: absolute;
   inset: 0;
@@ -155,7 +163,18 @@
   background: var(--ivory-50);
   color: var(--ink-900);
   box-shadow: 1.5rem 0 5rem rgb(7 19 15 / 14%);
-  will-change: transform;
+  will-change: transform, clip-path;
+}
+
+.desktopMenu {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.mobileMenu {
+  display: none;
 }
 
 .panelTop {
@@ -435,13 +454,56 @@
     color: var(--ivory-50);
   }
 
-  .header[data-menu-open='true'] .navigation {
-    visibility: hidden;
+  .header[data-menu-open='true'][data-page-theme='dark'] {
+    color: var(--ivory-50);
+
+    .navigation {
+      background: rgb(243 240 231 / 5%);
+      box-shadow:
+        0.021875rem 0.021875rem 0 rgb(255 255 255 / 20%) inset,
+        0 0 0.109375rem rgb(255 255 255 / 20%) inset;
+    }
+
+    .navigationItem {
+      color: var(--ivory-50);
+    }
   }
 
   .dialogShell {
-    background: var(--ivory-50);
+    z-index: 9998;
+    height: 100dvh;
+    background: transparent;
     backdrop-filter: none;
+    animation: none !important;
+    transition: visibility 0s linear 600ms !important;
+
+    &[data-open] {
+      visibility: visible;
+      transition-delay: 0s !important;
+    }
+
+    &[data-closed] {
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+
+  .dialogBackdrop {
+    z-index: 9997;
+    background: rgb(7 19 15 / 30%);
+    opacity: 0;
+    backdrop-filter: blur(15px);
+    animation: none !important;
+    transition: opacity 400ms ease !important;
+
+    &[data-open] {
+      opacity: 1;
+    }
+
+    &[data-closed] {
+      opacity: 0;
+      pointer-events: none;
+    }
   }
 
   .scrim {
@@ -450,63 +512,162 @@
 
   .panel {
     width: 100%;
-    padding: max(0.75rem, env(safe-area-inset-top)) 1.25rem
-      max(1rem, env(safe-area-inset-bottom));
+    padding: 0;
     box-shadow: none;
+    clip-path: inset(0% 100% 0% 0% round 0.25rem);
+    will-change: clip-path;
   }
 
-  .panelTop {
-    min-height: 4rem;
-    margin-bottom: 0.5rem;
-    border-bottom: 0;
+  .desktopMenu {
+    display: none;
+  }
+
+  .mobileMenu {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .mobileMenuTop {
+    display: flex;
+    min-height: 5rem;
+    flex: 0 0 5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: max(0.625rem, env(safe-area-inset-top)) 1.25rem 0.625rem;
 
     p {
+      margin: 0;
       font-size: 0.75rem;
+      letter-spacing: 0.14em;
     }
   }
 
-  .closeButton {
-    font-size: 1.5rem;
-  }
+  .mobileCloseButton {
+    display: inline-flex;
+    width: 7.5rem;
+    height: 3.75rem;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: #ebe9e2;
+    color: var(--ink-900);
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
 
-  .groupChooser {
-    display: grid;
-    margin-bottom: 1.4rem;
-
-    a,
-    button {
-      display: flex;
-      min-height: 3.25rem;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0;
-      border: 0;
-      border-bottom: 1px solid rgb(20 32 27 / 12%);
-      background: transparent;
-      color: var(--ink-900);
-      font-family: var(--font-interface);
+    span {
+      margin-left: 0.75rem;
       font-size: 1.25rem;
-      text-decoration: none;
-      cursor: pointer;
+      line-height: 1;
     }
 
-    a:focus-visible,
-    button:focus-visible {
+    &:focus-visible {
       outline: 2px solid var(--macaw-red);
       outline-offset: 2px;
     }
   }
 
-  .panelHeading {
-    margin-bottom: 0.65rem;
+  .mobileMenuTitleBar {
+    min-height: 5.5625rem;
+    flex: 0 0 5.5625rem;
+    border-bottom: 1px dotted rgb(20 32 27 / 28%);
 
-    h2 {
-      font-size: 2.1rem;
+    > a,
+    > div {
+      display: flex;
+      height: 100%;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      color: var(--ink-900);
+      font-family: var(--font-interface);
+      font-size: 1.5rem;
+      text-decoration: none;
+    }
+
+    button {
+      display: grid;
+      width: 2.5rem;
+      height: 2.5rem;
+      place-items: center;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    > a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--macaw-red);
+      outline-offset: -2px;
     }
   }
 
-  .chapterList a {
-    padding: 0.65rem 0;
+  .mobileMenuNav {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.3125rem;
+    padding: 1.25rem;
+
+    button {
+      display: flex;
+      min-height: 4.625rem;
+      flex: 1;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      border: 0;
+      background: #ebe9e2;
+      color: var(--ink-900);
+      font-family: var(--font-interface);
+      font-size: clamp(1.25rem, 6.15vw, 1.5rem);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--macaw-red);
+      outline-offset: -2px;
+    }
+  }
+
+  .mobileMenuContent {
+    min-height: 0;
+    flex: 1;
+    padding: 1.875rem 1.25rem 5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 1rem,
+      #000 calc(100% - 4rem),
+      transparent
+    );
+  }
+
+  .mobileMenuEyebrow {
+    margin: 0 0 1.25rem;
+    color: rgb(20 32 27 / 56%);
+    font-family: var(--font-editorial);
+    font-size: 1rem;
+    font-style: italic;
+  }
+
+  .mobileMenuContent .chapterList {
+    overflow: visible;
+  }
+
+  .mobileMenuContent .chapterList a {
+    padding: 0.75rem 0;
 
     strong {
       font-size: 1.125rem;
@@ -517,21 +678,44 @@
     }
   }
 
-  .panelFooter {
-    position: sticky;
-    bottom: 0;
-    padding-top: 0.75rem;
-    background: var(--ivory-50);
+  .mobileMenuFooter {
+    display: grid;
+    min-height: calc(11.25rem + env(safe-area-inset-bottom));
+    flex: 0 0 calc(11.25rem + env(safe-area-inset-bottom));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem;
+    padding: 0 1.25rem max(1.25rem, env(safe-area-inset-bottom));
 
-    button,
     a {
-      min-height: 3.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ebe9e2;
+      color: var(--ink-900);
+      font-size: 0.875rem;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    a:last-child {
+      background: var(--macaw-red);
+      color: var(--ivory-50);
+    }
+
+    a:focus-visible {
+      outline: 2px solid var(--forest-900);
+      outline-offset: -2px;
     }
   }
 }
 
 @media (max-width: 360px) {
-  .panel {
+  .mobileMenuTop,
+  .mobileMenuTitleBar > a,
+  .mobileMenuTitleBar > div,
+  .mobileMenuNav,
+  .mobileMenuContent,
+  .mobileMenuFooter {
     padding-right: 1rem;
     padding-left: 1rem;
   }
@@ -539,6 +723,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .header,
+  .dialogBackdrop,
+  .dialogShell,
   .panel,
   .chapterList a > span:last-child {
     transition: none;

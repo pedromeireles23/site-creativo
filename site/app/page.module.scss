@@ -502,7 +502,7 @@
   }
 
   to {
-    transform: translateY(-3rem);
+    transform: translateY(min(4svh, 3rem));
   }
 }
 
@@ -786,6 +786,21 @@
 .faunaCardActive .faunaFutureLink {
   opacity: 1;
   transform: translateY(0);
+}
+
+.territoryJourney {
+  position: relative;
+  isolation: isolate;
+}
+
+.territoryJourneyBackground {
+  display: none;
+}
+
+.territoryJourneyBackgroundVisual {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
 }
 
 .territories {
@@ -1212,6 +1227,13 @@
   color: var(--ink-900);
 }
 
+.mapTransitionFlow {
+  position: absolute;
+  z-index: 63;
+  inset: 0;
+  pointer-events: none;
+}
+
 .mapTrailStage {
   position: relative;
   z-index: 61;
@@ -1224,38 +1246,48 @@
 .mapEntryFog {
   position: absolute;
   z-index: 63;
-  top: -22svh;
+  top: -48svh;
   right: 0;
   left: 0;
-  height: 88svh;
+  height: 154svh;
+  pointer-events: none;
+}
+
+.mapEntryFogPlane {
+  position: absolute;
+  inset: 0;
   background:
     radial-gradient(
-      ellipse at 18% 58%,
-      rgb(243 240 231 / 98%) 0%,
-      rgb(243 240 231 / 72%) 34%,
-      transparent 69%
+      ellipse 78% 34% at 24% 53%,
+      rgb(243 240 231 / 96%) 0%,
+      rgb(220 231 223 / 76%) 34%,
+      transparent 72%
     ),
     radial-gradient(
-      ellipse at 74% 46%,
-      rgb(220 231 223 / 94%) 0%,
-      rgb(243 240 231 / 62%) 38%,
-      transparent 72%
+      ellipse 72% 32% at 78% 58%,
+      rgb(243 240 231 / 92%) 0%,
+      rgb(220 231 223 / 68%) 38%,
+      transparent 74%
     ),
     linear-gradient(
       180deg,
-      rgb(199 205 195 / 96%) 0%,
-      rgb(220 226 216 / 92%) 34%,
-      rgb(243 240 231 / 92%) 68%,
-      rgb(220 231 223 / 32%) 84%,
+      transparent 4%,
+      rgb(220 226 216 / 18%) 24%,
+      rgb(243 240 231 / 88%) 47%,
+      rgb(220 231 223 / 72%) 62%,
       transparent 100%
     );
-  filter: blur(24px);
+  filter: blur(clamp(14px, 1.2vw, 22px));
   pointer-events: none;
+  transform: translateZ(0);
+  transform-origin: center center;
+  backface-visibility: hidden;
+  will-change: opacity, transform;
 }
 
 .mapCarryover {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: 0;
   right: 0;
   left: 0;
@@ -1263,18 +1295,15 @@
   overflow: hidden;
   pointer-events: none;
   transform-origin: 50% 0;
+  will-change: opacity, transform;
 
   span {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      180deg,
-      rgb(220 226 216 / 22%) 0%,
-      rgb(243 240 231 / 36%) 24%,
-      rgb(243 240 231 / 54%) 50%,
-      rgb(243 240 231 / 86%) 76%,
-      var(--ivory-50) 100%
-    );
+    background:
+      linear-gradient(90deg, rgb(6 18 13 / 52%), transparent 58%),
+      linear-gradient(180deg, rgb(6 18 13 / 24%), transparent 38%),
+      linear-gradient(0deg, rgb(243 240 231 / 30%) 0%, transparent 24%);
   }
 }
 
@@ -1284,9 +1313,17 @@
   filter: saturate(0.72) contrast(0.92) brightness(1.08);
 }
 
-.mapAtmosphere {
+.mapUnderlay {
   position: absolute;
   z-index: 0;
+  inset: 0;
+  background: var(--ivory-50);
+  pointer-events: none;
+}
+
+.mapAtmosphere {
+  position: absolute;
+  z-index: 1;
   inset: 0;
   pointer-events: none;
 
@@ -1330,7 +1367,7 @@
 
 .mapTrailIntro {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   top: 0;
   right: clamp(1.25rem, 5vw, 5rem);
   bottom: 0;
@@ -1338,7 +1375,15 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  color: var(--ivory-50);
+  mix-blend-mode: soft-light;
+  will-change: transform;
+}
+
+.mapTrailIntroText {
+  width: 100%;
   text-align: center;
+  will-change: opacity;
 
   > p {
     margin: 0 0 1.4rem;
@@ -1359,7 +1404,7 @@
     em {
       display: block;
       margin-top: 0.14em;
-      color: var(--moss-600);
+      color: var(--mist-100);
       font-family: var(--font-editorial);
       font-size: 0.49em;
       font-weight: 400;
@@ -1371,7 +1416,7 @@
 
 .mapTrailLayout {
   position: absolute;
-  z-index: 3;
+  z-index: 4;
   inset: 0;
   display: grid;
   grid-template-columns: minmax(24rem, 1fr) minmax(32rem, 1fr);
@@ -1380,6 +1425,186 @@
   padding: clamp(6rem, 8vw, 8.5rem) clamp(1.5rem, 6vw, 7rem)
     clamp(2rem, 4vw, 4rem);
   opacity: 0;
+}
+
+@media (min-width: 1024px) {
+  .territoryJourneyBackground {
+    position: sticky;
+    z-index: 0;
+    top: 0;
+    display: block;
+    height: 100svh;
+    margin-bottom: -100svh;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .territoryJourneyBackgroundImage {
+    object-fit: cover;
+    object-position: center center;
+    filter: saturate(0.76) contrast(0.96);
+    transform: scale(1.015);
+  }
+
+  .territoryJourneyShade,
+  .territoryJourneyMist {
+    position: absolute;
+    inset: 0;
+  }
+
+  .territoryJourneyShade {
+    background:
+      linear-gradient(90deg, rgb(6 18 13 / 52%), transparent 58%),
+      linear-gradient(180deg, rgb(6 18 13 / 24%), transparent 38%);
+  }
+
+  .territoryJourneyMist {
+    display: none;
+  }
+
+  .territories,
+  .territoryStage {
+    background: transparent;
+  }
+
+  .territoryFinaleMist {
+    display: none;
+  }
+
+  .mapTrail {
+    min-height: 0;
+    margin-top: 0;
+    background: transparent;
+  }
+
+  .mapTransitionFlow {
+    position: relative;
+    z-index: 63;
+    inset: auto;
+    display: flow-root;
+  }
+
+  .mapTrailIntro {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    min-height: 48.5svh;
+    padding: 0 clamp(2rem, 10vw, 12rem);
+  }
+
+  .mapEntryFog {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    height: 100svh;
+  }
+
+  .mapEntryFogPlane {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    background:
+      radial-gradient(
+        ellipse 36% 18% at 2% 68%,
+        rgb(243 240 231 / 96%) 0%,
+        rgb(220 231 223 / 76%) 52%,
+        transparent 100%
+      ),
+      radial-gradient(
+        ellipse 34% 18% at 25% 61%,
+        rgb(243 240 231 / 94%) 0%,
+        rgb(220 231 223 / 72%) 54%,
+        transparent 100%
+      ),
+      radial-gradient(
+        ellipse 38% 19% at 52% 69%,
+        rgb(243 240 231 / 98%) 0%,
+        rgb(220 231 223 / 78%) 52%,
+        transparent 100%
+      ),
+      radial-gradient(
+        ellipse 34% 18% at 77% 59%,
+        rgb(243 240 231 / 94%) 0%,
+        rgb(220 231 223 / 68%) 55%,
+        transparent 100%
+      ),
+      radial-gradient(
+        ellipse 38% 20% at 101% 67%,
+        rgb(243 240 231 / 98%) 0%,
+        rgb(220 231 223 / 76%) 54%,
+        transparent 100%
+      ),
+      linear-gradient(
+        180deg,
+        transparent 0%,
+        transparent 44%,
+        rgb(232 237 228 / 14%) 52%,
+        rgb(243 240 231 / 84%) 68%,
+        var(--ivory-50) 84%,
+        var(--ivory-50) 100%
+      );
+    filter: none;
+    transform: translateZ(0);
+  }
+
+  .mapEntryFogPlane::before {
+    position: absolute;
+    inset: 22% -8% -10%;
+    background:
+      radial-gradient(
+        ellipse 27% 21% at 9% 48%,
+        rgb(243 240 231 / 74%) 0%,
+        transparent 74%
+      ),
+      radial-gradient(
+        ellipse 30% 23% at 39% 43%,
+        rgb(232 237 228 / 72%) 0%,
+        transparent 76%
+      ),
+      radial-gradient(
+        ellipse 29% 22% at 68% 51%,
+        rgb(243 240 231 / 78%) 0%,
+        transparent 75%
+      ),
+      radial-gradient(
+        ellipse 28% 21% at 94% 42%,
+        rgb(232 237 228 / 72%) 0%,
+        transparent 76%
+      );
+    content: '';
+    filter: blur(clamp(24px, 2vw, 38px));
+    opacity: 0.9;
+  }
+
+  .mapEntryFogPlane::after {
+    position: absolute;
+    inset: 46% 0 -1px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgb(243 240 231 / 72%) 38%,
+      rgb(243 240 231 / 96%) 62%,
+      var(--ivory-50) 78%,
+      var(--ivory-50) 100%
+    );
+    content: '';
+  }
+
+  .mapTrailStage {
+    margin-top: -1px;
+    background: var(--ivory-50);
+  }
+
+  .mapCarryover {
+    display: none;
+  }
+}
+
+.mapTrailCoordinates {
+  display: none;
 }
 
 .mapTrailCopy {
@@ -1505,6 +1730,161 @@
   font-family: var(--font-editorial);
   font-size: 0.92rem;
   font-style: italic;
+}
+
+@media (min-width: 1024px) {
+  .mapTrailLayout {
+    display: grid;
+    grid-template-rows: 36svh 64svh;
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0;
+    background: var(--ivory-50);
+  }
+
+  .mapTrailCoordinates {
+    position: absolute;
+    z-index: 3;
+    top: 2rem;
+    right: clamp(1rem, 2vw, 2.5rem);
+    left: clamp(1rem, 2vw, 2.5rem);
+    display: flex;
+    justify-content: space-between;
+    padding-top: 0.8rem;
+    border-top: 1px dashed rgb(20 32 27 / 36%);
+    color: rgb(20 32 27 / 56%);
+    font-size: clamp(0.6rem, 0.72vw, 0.75rem);
+    line-height: 1.15;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+
+    span:last-child {
+      text-align: right;
+    }
+
+    small {
+      display: block;
+      margin-top: 0.25rem;
+      font-family: var(--font-editorial);
+      font-size: 1.08em;
+      font-style: italic;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+  }
+
+  .mapTrailCopy {
+    z-index: 2;
+    display: flex;
+    max-width: none;
+    grid-row: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem clamp(14rem, 23vw, 30rem) 2rem;
+    text-align: center;
+
+    > p:first-child {
+      margin: 0 0 0.85rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+    }
+
+    h3 {
+      max-width: 24ch;
+      font-family: var(--font-editorial);
+      font-size: clamp(2.2rem, 2.7vw, 3.25rem);
+      font-weight: 400;
+      line-height: 0.9;
+      text-transform: uppercase;
+      letter-spacing: -0.035em;
+    }
+
+    > p:last-child {
+      max-width: 54ch;
+      margin: 1rem auto 0;
+      color: rgb(20 32 27 / 62%);
+      font-family: var(--font-interface);
+      font-size: clamp(0.74rem, 0.82vw, 0.88rem);
+      font-style: normal;
+      line-height: 1.45;
+    }
+  }
+
+  .mapFigure {
+    position: relative;
+    width: 100%;
+    max-width: none;
+    height: 64svh;
+    grid-row: 2;
+    justify-self: stretch;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 0%, rgb(73 106 80 / 34%), transparent 46%),
+      var(--forest-950);
+  }
+
+  .mapFigure::after {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    background: linear-gradient(180deg, rgb(4 13 9 / 5%), rgb(4 13 9 / 42%));
+    content: '';
+    pointer-events: none;
+  }
+
+  .mapFigure svg {
+    position: absolute;
+    z-index: 1;
+    top: -50%;
+    left: 50%;
+    width: min(72vw, 72rem);
+    max-height: none;
+    transform: translateX(-50%);
+  }
+
+  .mapFill {
+    fill: rgb(220 231 223 / 6%);
+  }
+
+  .mapGrid {
+    stroke: rgb(220 231 223 / 10%);
+  }
+
+  .mapOutline {
+    stroke: rgb(220 231 223 / 42%);
+  }
+
+  .mapContours {
+    stroke: rgb(220 231 223 / 22%);
+  }
+
+  .mapRiver {
+    stroke: rgb(143 185 180 / 64%);
+  }
+
+  .mapTrailLine {
+    stroke: var(--mist-100);
+  }
+
+  .mapOrigin,
+  .mapDestination {
+    fill: var(--mist-100);
+  }
+
+  .mapFigure figcaption {
+    z-index: 3;
+    right: clamp(1.5rem, 4vw, 5rem);
+    bottom: 2rem;
+    left: clamp(1.5rem, 4vw, 5rem);
+    color: var(--mist-100);
+  }
+
+  .mapScale {
+    z-index: 5;
+    bottom: 2rem;
+    color: var(--mist-100);
+  }
 }
 
 .mapJaguarReveal {
@@ -2604,6 +2984,9 @@
     top: -18svh;
     display: block;
     height: 32svh;
+  }
+
+  .mapEntryFogPlane {
     background:
       radial-gradient(
         ellipse at 24% 48%,
@@ -2623,6 +3006,17 @@
 
   .mapCarryover {
     display: block;
+
+    span {
+      background: linear-gradient(
+        180deg,
+        rgb(220 226 216 / 22%) 0%,
+        rgb(243 240 231 / 36%) 24%,
+        rgb(243 240 231 / 54%) 50%,
+        rgb(243 240 231 / 86%) 76%,
+        var(--ivory-50) 100%
+      );
+    }
   }
 
   .mapAtmosphere::before {
@@ -2637,8 +3031,11 @@
     left: 1.25rem;
     min-height: 0;
     padding: 5rem 0 2rem;
+    color: var(--ink-900);
+    mix-blend-mode: normal;
+    text-shadow: none;
 
-    > p {
+    .mapTrailIntroText > p {
       margin-bottom: 1rem;
       font-size: 1rem;
     }
@@ -3613,12 +4010,19 @@
 
   .mapTrail {
     min-height: 100svh;
+    margin-top: -2px;
+    background: var(--ivory-50);
   }
 
   .mapTrailStage {
     position: relative;
     height: auto;
     overflow: visible;
+    background: var(--ivory-50);
+  }
+
+  .mapUnderlay {
+    opacity: 1 !important;
   }
 
   .mapTrailIntro,

@@ -143,7 +143,7 @@ export function VeinsSection() {
                 y: () => Math.min(window.innerHeight * 0.09, 96),
               },
               {
-                y: () => -Math.min(window.innerHeight * 0.04, 48),
+                y: () => Math.min(window.innerHeight * 0.04, 48),
                 ease: 'none',
                 scrollTrigger: {
                   trigger: section,
