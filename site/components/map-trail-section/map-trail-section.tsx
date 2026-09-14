@@ -1,27 +1,78 @@
 'use client';
 
 import Image from 'next/image';
-import { type ReactNode, useId, useRef } from 'react';
+import { Fragment, type ReactNode, useId, useRef } from 'react';
 import styles from '@/app/page.module.scss';
 import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
 import { MOTION_QUERIES, useMotionProfile } from '@/hooks/use-motion-profile';
 import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
-const contourPaths = [
-  'M80 430 C122 315 224 250 330 272 C422 291 475 245 538 174 C589 117 661 139 687 225',
-  'M50 492 C126 361 212 322 310 334 C421 347 487 309 555 229 C603 172 659 186 704 254',
-  'M35 555 C145 430 239 389 343 401 C445 413 520 369 592 294 C636 248 676 257 713 291',
-  'M61 614 C169 509 273 466 379 475 C477 484 552 449 621 385 C655 354 688 349 716 360',
-  'M118 660 C220 586 319 548 418 554 C509 560 580 536 651 486',
-  'M111 318 C152 234 222 179 304 173 C391 167 432 128 466 62',
-  'M180 307 C215 241 272 216 336 222 C407 229 451 194 492 125',
-];
+// Simplified from Natural Earth 1:110m public-domain country geometries.
+const countries = [
+  {
+    name: 'Argentina',
+    path: 'M381 811L391 825L421 834L405 841L381 836ZM504 560L494 607L509 617L514 635L503 649L486 655L451 657L454 677L447 681L420 682L422 693L436 693L439 699L420 709L415 726L396 732L393 740L414 751L411 761L375 790L386 808L344 804L340 789L328 786L327 774L339 762L352 723L342 695L350 658L356 654L353 632L368 605L360 573L369 541L385 523L383 496L396 491L407 466L422 469L429 477L433 468L446 469L468 489L502 504L493 526L526 529L543 508L549 523Z',
+  },
+  {
+    name: 'Chile',
+    path: 'M381 811L381 836L400 837L386 845L354 838L313 814L353 827L363 815ZM370 419L383 439L380 450L390 478L399 479L396 491L383 496L385 523L369 541L360 573L368 605L353 632L356 654L350 658L342 695L352 723L339 762L327 774L328 786L340 789L344 804L382 808L356 814L350 825L310 807L303 767L319 748L302 744L313 734L317 716L329 720L335 696L328 694L324 707L317 706L330 661L325 638L349 585L349 545L365 461L361 427Z',
+  },
+  {
+    name: 'Uruguai',
+    path: 'M504 560L511 559L547 581L554 588L547 607L520 612L495 602Z',
+  },
+  {
+    name: 'Brasil',
+    path: 'M552 600L554 588L547 581L511 559L504 560L549 523L549 514L538 510L542 491L529 490L525 472L501 469L498 448L506 425L497 415L497 404L476 404L472 376L417 351L418 331L385 345L359 345L360 328L341 334L329 328L321 306L331 296L333 281L367 270L372 234L365 216L374 211L368 210L368 203L393 199L398 209L415 213L440 197L430 194L424 176L443 180L467 171L469 164L478 166L483 177L478 191L488 207L522 201L523 194L557 198L575 175L584 201L590 202L585 223L605 224L605 236L614 228L647 239L650 252L702 254L733 276L751 279L761 304L756 323L716 368L710 422L691 467L679 479L650 483L616 501L606 512L602 543Z',
+  },
+  {
+    name: 'Bolívia',
+    path: 'M371 344L385 345L418 331L417 351L472 376L476 404L497 404L497 415L506 425L502 445L488 439L458 442L448 471L433 468L429 477L422 469L407 466L390 478L380 450L383 439L370 419L377 407L373 389L381 362Z',
+  },
+  {
+    name: 'Peru',
+    path: 'M367 270L333 281L331 296L321 306L329 328L341 334L360 328L359 345L371 344L381 362L373 389L377 407L361 427L298 386L256 302L240 291L238 275L250 260L249 271L263 277L269 273L278 255L303 239L308 222L331 248L365 252L358 264Z',
+  },
+  {
+    name: 'Colômbia',
+    path: 'M401 208L393 199L368 203L368 210L374 211L365 216L372 234L367 270L358 264L365 252L331 248L308 222L282 217L265 203L286 179L277 141L284 133L282 126L302 116L311 98L327 96L350 83L329 119L334 120L344 143L365 144L372 153L395 154L390 171L396 185L390 190Z',
+  },
+  {
+    name: 'Venezuela',
+    path: 'M469 164L467 171L443 180L424 176L430 194L440 197L407 214L390 190L396 185L390 171L395 154L372 153L365 144L344 143L334 120L329 119L333 105L351 90L344 94L347 105L342 111L351 119L350 99L364 94L366 86L386 104L423 109L429 103L457 102L447 105L480 128L462 155Z',
+  },
+  {
+    name: 'Guiana',
+    path: 'M516 201L494 208L482 202L478 166L462 155L480 128L510 155L499 176Z',
+  },
+  {
+    name: 'Suriname',
+    path: 'M539 196L523 194L522 201L516 201L504 184L499 176L510 155L545 157Z',
+  },
+  {
+    name: 'Equador',
+    path: 'M305 224L303 239L278 255L269 273L263 277L249 271L256 252L243 247L243 234L253 213L266 206Z',
+  },
+  {
+    name: 'Paraguai',
+    path: 'M498 448L501 469L525 472L529 490L542 491L536 520L526 529L493 526L502 504L468 489L448 471L458 442L488 439Z',
+  },
+  {
+    name: 'Guiana Francesa',
+    path: 'M571 175L557 198L539 196L545 157Z',
+  },
+] as const;
+
+const amazonPath =
+  'M286 196C339 157 425 150 511 162C600 174 674 211 686 260C665 306 617 358 561 392C490 434 400 423 339 380C294 348 265 273 286 196Z';
+
+const documentaryUrl = 'https://www.youtube.com/watch?v=SSdwbEcAsWc&t=12s';
 
 export function MapTrailSection({ children }: { children: ReactNode }) {
   const sectionRef = useRef<HTMLElement>(null);
   const isSmoothScrollReady = useSmoothScrollReady();
   const reduceMotion = useMotionProfile() === 'reduced';
-  const clipId = 'map-trail-' + useId().replaceAll(':', '');
+  const id = 'amazon-atlas-' + useId().replaceAll(':', '');
 
   useGSAP(
     () => {
@@ -30,415 +81,339 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
       const section = sectionRef.current;
       if (!section) return;
 
-      const stage = section.querySelector<HTMLElement>('[data-map-stage]');
-      const intro = section.querySelector<HTMLElement>('[data-map-intro]');
-      const introText = section.querySelector<HTMLElement>(
-        '[data-map-intro-text]',
+      const editorial = section.querySelector<HTMLElement>(
+        '[data-atlas-editorial]',
       );
-      const mapLayout = section.querySelector<HTMLElement>('[data-map-layout]');
-      const mapFigure = section.querySelector<HTMLElement>('[data-map-figure]');
-      const trail = section.querySelector<SVGPathElement>('[data-map-trail]');
-      const carryover = section.querySelector<HTMLElement>(
-        '[data-map-carryover]',
+      const stage = section.querySelector<HTMLElement>('[data-atlas-stage]');
+      const camera = section.querySelector<HTMLElement>('[data-atlas-camera]');
+      const route = section.querySelector<SVGPathElement>('[data-atlas-route]');
+      const marker = section.querySelector<SVGGElement>('[data-atlas-marker]');
+      const amazon = section.querySelector<SVGPathElement>(
+        '[data-atlas-amazon]',
       );
-      const underlay = section.querySelector<HTMLElement>(
-        '[data-map-underlay]',
+      const label = section.querySelector<HTMLElement>('[data-atlas-label]');
+      const stats = section.querySelector<HTMLElement>('[data-atlas-stats]');
+      const film = section.querySelector<HTMLElement>('[data-atlas-film]');
+      const chapter = section.querySelector<HTMLElement>(
+        '[data-atlas-chapter]',
       );
-      const atmosphere = section.querySelector<HTMLElement>(
-        '[data-map-atmosphere]',
-      );
-      const entryFog = section.querySelector<HTMLElement>(
-        '[data-territory-next-fog]',
-      );
-      const fogPlane = section.querySelector<HTMLElement>(
-        '[data-map-fog-plane]',
-      );
-      const jaguarReveal = section.querySelector<HTMLElement>(
-        '[data-map-jaguar-reveal]',
-      );
-      const jaguarImage = section.querySelector<HTMLElement>(
-        '[data-jaguar-image]',
-      );
-      const jaguarEyeImage = section.querySelector<HTMLElement>(
-        '[data-jaguar-eye-image]',
-      );
-      const jaguarEyes =
-        section.querySelector<HTMLElement>('[data-jaguar-eyes]');
-      const jaguarVeil =
-        section.querySelector<HTMLElement>('[data-jaguar-veil]');
-      const jaguarGhost = section.querySelector<HTMLElement>(
-        '[data-jaguar-ghost]',
-      );
-      const jaguarLines = gsap.utils.toArray<HTMLElement>(
-        '[data-jaguar-line]',
-        section,
-      );
-      const jaguarMeta = gsap.utils.toArray<HTMLElement>(
-        '[data-jaguar-meta]',
-        section,
-      );
-      const labels = gsap.utils.toArray<SVGElement>(
-        '[data-map-label]',
-        section,
+      const oceanGrid = section.querySelector<HTMLElement>(
+        '[data-atlas-ocean-grid]',
       );
 
       if (
+        !editorial ||
         !stage ||
-        !intro ||
-        !introText ||
-        !mapLayout ||
-        !mapFigure ||
-        !trail ||
-        !carryover ||
-        !underlay ||
-        !atmosphere ||
-        !entryFog ||
-        !fogPlane ||
-        !jaguarReveal ||
-        !jaguarImage ||
-        !jaguarEyeImage ||
-        !jaguarEyes ||
-        !jaguarVeil ||
-        !jaguarGhost
+        !camera ||
+        !route ||
+        !marker ||
+        !amazon ||
+        !label ||
+        !stats ||
+        !film ||
+        !chapter ||
+        !oceanGrid
       ) {
         return;
       }
 
-      const trailLength = trail.getTotalLength();
-      gsap.set(trail, {
-        strokeDasharray: trailLength,
-        strokeDashoffset: trailLength,
+      const routeLength = route.getTotalLength();
+      const markerPosition = { progress: 0 };
+      const placeMarker = () => {
+        const point = route.getPointAtLength(
+          routeLength * markerPosition.progress,
+        );
+        gsap.set(marker, { x: point.x, y: point.y });
+      };
+
+      gsap.set(route, {
+        strokeDasharray: routeLength,
+        strokeDashoffset: routeLength,
       });
+      placeMarker();
 
       if (reduceMotion) {
-        gsap.set(trail, { strokeDashoffset: 0 });
+        markerPosition.progress = 0.72;
+        placeMarker();
+        gsap.set(route, { strokeDashoffset: 0 });
+        gsap.set([amazon, label, stats, film, chapter], {
+          autoAlpha: 1,
+          x: 0,
+          y: 0,
+        });
+        gsap.set(camera, { clearProps: 'transform' });
+        scheduleScrollRefresh();
         return;
       }
 
       const media = gsap.matchMedia();
-      const jaguarVisuals = [jaguarImage, jaguarEyeImage];
 
-      const updateHeader = (progress: number) => {
-        const isMapVisible = progress < 0.48;
-        const isJaguarVisible = progress >= 0.48;
-        section.dataset.headerTheme = isMapVisible ? 'light' : 'dark';
-        section.dataset.headerChapter = isJaguarVisible
-          ? 'olhos'
-          : 'territorios';
-      };
-
-      media.add(MOTION_QUERIES.wide, () => {
-        gsap.set(intro, { clearProps: 'all' });
-        gsap.set(introText, { opacity: 1 });
-        gsap.set(fogPlane, { autoAlpha: 1, rotateX: 0 });
-        gsap.set(mapLayout, { autoAlpha: 1, yPercent: 0 });
-        gsap.set(mapFigure, { scale: 1, xPercent: 0, yPercent: 0 });
-        gsap.set(labels, { autoAlpha: 0, y: 12 });
-        gsap.set(carryover, { autoAlpha: 0, scale: 1 });
-        gsap.set([underlay, atmosphere], { autoAlpha: 1 });
-        gsap.set(jaguarReveal, { y: 0, yPercent: 102 });
-        gsap.set(jaguarVisuals, { scale: 1.12 });
-        gsap.set(jaguarEyes, { autoAlpha: 0 });
-        gsap.set(jaguarVeil, { autoAlpha: 0.86 });
-        gsap.set(jaguarGhost, { autoAlpha: 0, xPercent: -3 });
-        gsap.set(jaguarLines, { yPercent: 115 });
-        gsap.set(jaguarMeta, { autoAlpha: 0, y: 18 });
-
-        const titleMotion = gsap.fromTo(
-          intro,
-          { y: '0svh' },
-          {
-            y: '120svh',
-            ease: 'none',
-            scrollTrigger: {
-              trigger: intro,
-              start: 'center center',
-              endTrigger: entryFog,
-              end: 'bottom top',
-              scrub: true,
-              invalidateOnRefresh: true,
-            },
-          },
-        );
-
-        const titleFade = gsap.fromTo(
-          introText,
-          { opacity: 1 },
-          {
-            opacity: 0.5,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: intro,
-              start: 'center center',
-              endTrigger: entryFog,
-              end: 'bottom top',
-              scrub: true,
-              invalidateOnRefresh: true,
-            },
-          },
-        );
-
-        const timeline = gsap.timeline({
-          defaults: { ease: 'none' },
-          scrollTrigger: {
-            trigger: stage,
-            start: 'top top',
-            end: () => '+=' + window.innerHeight * 3.25,
-            pin: stage,
-            scrub: true,
-            invalidateOnRefresh: true,
-            onUpdate: (self) => updateHeader(self.progress),
-          },
-        });
-
-        timeline
-          .to({}, { duration: 0.3 })
-          .to(trail, { strokeDashoffset: 0, duration: 0.56 }, 0.3)
-          .to(
-            labels,
-            { autoAlpha: 1, y: 0, stagger: 0.045, duration: 0.2 },
-            0.52,
-          )
-          .to({}, { duration: 0.36 }, 0.74)
-          .to(
-            mapFigure,
-            {
-              scale: 1.52,
-              xPercent: 13,
-              yPercent: 15,
-              transformOrigin: '35% 25%',
-              duration: 0.48,
-            },
-            1.1,
-          )
-          .to(jaguarReveal, { yPercent: 0, duration: 0.42 }, 1.32)
-          .to(jaguarVisuals, { scale: 1, duration: 0.72 }, 1.42)
-          .to(jaguarEyes, { autoAlpha: 1, duration: 0.16 }, 1.46)
-          .to(jaguarVeil, { autoAlpha: 0.12, duration: 0.46 }, 1.52)
-          .to(jaguarGhost, { autoAlpha: 1, xPercent: 0, duration: 0.28 }, 1.66)
-          .to(
-            jaguarMeta,
-            { autoAlpha: 1, y: 0, stagger: 0.04, duration: 0.18 },
-            1.7,
-          )
-          .to(
-            jaguarLines,
-            { yPercent: 0, stagger: 0.075, duration: 0.22 },
-            1.74,
-          )
-          .to(jaguarEyes, { autoAlpha: 0, duration: 0.18 }, 1.98)
-          .to({}, { duration: 0.82 }, 2.16);
-
-        return () => {
-          titleMotion.kill();
-          titleFade.kill();
-          timeline.kill();
-        };
-      });
-
-      media.add(MOTION_QUERIES.compactCinematic, () => {
-        gsap.set(intro, { autoAlpha: 0, y: 24 });
-        gsap.set(introText, { opacity: 1 });
-        gsap.set(fogPlane, { autoAlpha: 1, rotateX: 0 });
-        gsap.set(mapLayout, { autoAlpha: 0 });
-        gsap.set(mapFigure, { scale: 0.92 });
-        gsap.set(labels, { autoAlpha: 0, y: 12 });
-        gsap.set(carryover, { autoAlpha: 1, scale: 1.015 });
-        gsap.set([underlay, atmosphere], { autoAlpha: 1 });
-        gsap.set(jaguarReveal, { y: 0, yPercent: 102 });
-        gsap.set(jaguarVisuals, { scale: 1.08 });
-        gsap.set(jaguarEyes, { autoAlpha: 0 });
-        gsap.set(jaguarVeil, { autoAlpha: 0.86 });
-        gsap.set(jaguarGhost, { autoAlpha: 0, xPercent: -3 });
-        gsap.set(jaguarLines, { yPercent: 115 });
-        gsap.set(jaguarMeta, { autoAlpha: 0, y: 18 });
-
-        const entryReveal = gsap.to(intro, {
-          autoAlpha: 1,
-          y: 0,
+      const editorialDrift = gsap.fromTo(
+        editorial,
+        { yPercent: -4 },
+        {
+          yPercent: 18,
           ease: 'none',
           scrollTrigger: {
-            trigger: section,
-            start: 'top 88%',
-            end: 'top 24%',
+            trigger: editorial,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+          },
+        },
+      );
+
+      const createJourney = (compact: boolean) => {
+        const journeyStart = 'top 82%';
+        const journeyEnd = 'bottom 28%';
+
+        gsap.set(camera, { transformOrigin: compact ? '48% 29%' : '48% 27%' });
+        gsap.set(amazon, { autoAlpha: 0.08 });
+        gsap.set(label, { autoAlpha: 0, y: 18 });
+        gsap.set(stats, { autoAlpha: 1 });
+        gsap.set(film, { autoAlpha: 1 });
+        gsap.set(chapter, { autoAlpha: 0, y: 16 });
+
+        const cameraDepth = gsap.fromTo(
+          camera,
+          {
+            scale: compact ? 0.8 : 0.82,
+            xPercent: compact ? -1 : -3,
+            y: compact ? '4svh' : '2svh',
+          },
+          {
+            scale: compact ? 1.16 : 1.22,
+            xPercent: compact ? 3 : 5,
+            y: compact ? '96svh' : '82svh',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: stage,
+              start: journeyStart,
+              end: journeyEnd,
+              scrub: 0.35,
+              invalidateOnRefresh: true,
+            },
+          },
+        );
+
+        const gridDepth = gsap.fromTo(
+          oceanGrid,
+          { backgroundPosition: '0 0' },
+          {
+            backgroundPosition: compact ? '0 72svh' : '0 92svh',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: stage,
+              start: journeyStart,
+              end: journeyEnd,
+              scrub: true,
+            },
+          },
+        );
+
+        const chapterReveal = gsap.fromTo(
+          chapter,
+          { autoAlpha: 0, y: 16 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: stage,
+              start: 'top 88%',
+              end: 'top 58%',
+              scrub: true,
+            },
+          },
+        );
+
+        const routeReveal = gsap.to(route, {
+          strokeDashoffset: 0,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: stage,
+            start: journeyStart,
+            end: journeyEnd,
+            scrub: true,
+            onEnter: () => {
+              section.dataset.headerTheme = 'dark';
+            },
+            onEnterBack: () => {
+              section.dataset.headerTheme = 'dark';
+            },
+            onLeaveBack: () => {
+              section.dataset.headerTheme = 'light';
+            },
+          },
+        });
+
+        const markerJourney = gsap.to(markerPosition, {
+          progress: 1,
+          ease: 'none',
+          onUpdate: placeMarker,
+          scrollTrigger: {
+            trigger: stage,
+            start: journeyStart,
+            end: journeyEnd,
             scrub: true,
           },
         });
 
-        const timeline = gsap.timeline({
+        const amazonReveal = gsap.timeline({
+          scrollTrigger: {
+            trigger: stage,
+            start: journeyStart,
+            end: journeyEnd,
+            scrub: true,
+          },
+        });
+        amazonReveal
+          .to(amazon, { autoAlpha: 0.92, ease: 'none', duration: 0.68 })
+          .to(
+            label,
+            { autoAlpha: 1, y: 0, ease: 'none', duration: 0.32 },
+            0.44,
+          );
+
+        const statsJourney = gsap.fromTo(
+          stats,
+          { y: '48vh' },
+          {
+            y: '-16vh',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: stage,
+              start: journeyStart,
+              end: journeyEnd,
+              scrub: true,
+            },
+          },
+        );
+
+        const filmJourney = gsap.fromTo(
+          film,
+          { y: '48vh' },
+          {
+            y: '-16vh',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: stage,
+              start: journeyStart,
+              end: journeyEnd,
+              scrub: true,
+            },
+          },
+        );
+
+        return () => {
+          cameraDepth.kill();
+          gridDepth.kill();
+          chapterReveal.kill();
+          routeReveal.kill();
+          markerJourney.kill();
+          amazonReveal.kill();
+          statsJourney.kill();
+          filmJourney.kill();
+        };
+      };
+
+      const createPhoneJourney = () => {
+        gsap.set(oceanGrid, { clearProps: 'backgroundPosition' });
+        gsap.set(chapter, { autoAlpha: 1, y: 0 });
+        gsap.set(amazon, { autoAlpha: 0.08 });
+        gsap.set(label, { autoAlpha: 0, y: 18 });
+        gsap.set([film, stats], {
+          autoAlpha: 1,
+          clearProps: 'transform',
+        });
+
+        // White Desert keeps the map in the section's natural flow and lets
+        // one unified card stack pass over it. This light parallax compensates
+        // part of the page movement without pinning the whole viewport.
+        const mapParallax = gsap.fromTo(
+          camera,
+          { yPercent: -5 },
+          {
+            yPercent: 100,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: stage,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          },
+        );
+
+        const svgTimeline = gsap.timeline({
           defaults: { ease: 'none' },
           scrollTrigger: {
-            trigger: section,
-            start: 'top top',
-            end: () => '+=' + window.innerHeight * 2.15,
-            pin: section,
-            scrub: 0.2,
+            trigger: camera,
+            start: 'top 82%',
+            end: 'bottom 22%',
+            scrub: true,
             invalidateOnRefresh: true,
-            onUpdate: (self) => updateHeader(self.progress),
+            onEnter: () => {
+              section.dataset.headerTheme = 'dark';
+            },
+            onEnterBack: () => {
+              section.dataset.headerTheme = 'dark';
+            },
+            onLeaveBack: () => {
+              section.dataset.headerTheme = 'light';
+            },
           },
         });
 
-        timeline
-          .to(entryFog, { autoAlpha: 0, yPercent: -28, duration: 0.16 }, 0)
-          .to(carryover, { autoAlpha: 0, scale: 1.045, duration: 0.2 }, 0.07)
-          .to(intro, { autoAlpha: 0, scale: 0.9, y: -34, duration: 0.14 }, 0.11)
-          .to(mapLayout, { autoAlpha: 1, duration: 0.14 }, 0.2)
-          .to(mapFigure, { scale: 1, duration: 0.18 }, 0.2)
-          .to(trail, { strokeDashoffset: 0, duration: 0.28 }, 0.34)
+        svgTimeline
+          .to(route, { strokeDashoffset: 0, duration: 1 }, 0)
           .to(
-            labels,
-            { autoAlpha: 1, y: 0, stagger: 0.035, duration: 0.1 },
-            0.4,
-          )
-          .to(
-            mapFigure,
+            markerPosition,
             {
-              scale: 1.2,
-              xPercent: 5,
-              yPercent: 6,
-              transformOrigin: '35% 25%',
-              duration: 0.28,
+              progress: 1,
+              duration: 1,
+              onUpdate: placeMarker,
             },
-            0.65,
+            0,
           )
-          .to(mapLayout, { autoAlpha: 0, duration: 0.18 }, 0.72)
-          .to(jaguarReveal, { yPercent: 0, duration: 0.24 }, 0.72)
-          .to(jaguarVisuals, { scale: 1, duration: 0.54 }, 0.78)
-          .to(jaguarEyes, { autoAlpha: 1, duration: 0.11 }, 0.8)
-          .to(jaguarVeil, { autoAlpha: 0.12, duration: 0.34 }, 0.84)
-          .to(jaguarGhost, { autoAlpha: 1, xPercent: 0, duration: 0.22 }, 0.94)
-          .to(
-            jaguarMeta,
-            { autoAlpha: 1, y: 0, stagger: 0.035, duration: 0.14 },
-            0.98,
-          )
-          .to(jaguarLines, { yPercent: 0, stagger: 0.07, duration: 0.18 }, 1)
-          .to(jaguarEyes, { autoAlpha: 0, duration: 0.16 }, 1.08)
-          .to({}, { duration: 1.26 }, 1.24);
+          .to(amazon, { autoAlpha: 0.92, duration: 0.68 }, 0)
+          .to(label, { autoAlpha: 1, y: 0, duration: 0.32 }, 0.44);
 
         return () => {
-          entryReveal.kill();
-          timeline.kill();
+          mapParallax.kill();
+          svgTimeline.kill();
         };
+      };
+
+      media.add(MOTION_QUERIES.wide, () => createJourney(false));
+      media.add(MOTION_QUERIES.compactCinematic, () => {
+        if (window.matchMedia('(max-width: 767px)').matches) return;
+        return createJourney(true);
       });
+      media.add(
+        '(max-width: 767px) and (min-height: 701px), (max-width: 767px) and (orientation: portrait)',
+        createPhoneJourney,
+      );
 
       media.add(MOTION_QUERIES.shortLandscape, () => {
-        gsap.set([intro, mapLayout, jaguarReveal], {
+        if (window.matchMedia('(max-width: 767px)').matches) return;
+        markerPosition.progress = 0.74;
+        placeMarker();
+        gsap.set(route, { strokeDashoffset: 0 });
+        gsap.set(camera, { scale: 1, x: 0, y: 0 });
+        gsap.set([amazon, label, stats, film, chapter], {
           autoAlpha: 1,
           x: 0,
           y: 0,
-          yPercent: 0,
         });
-        gsap.set(mapFigure, { scale: 1 });
-        gsap.set(labels, { autoAlpha: 1, y: 0 });
-        gsap.set(carryover, { autoAlpha: 0 });
-        gsap.set([underlay, atmosphere], { autoAlpha: 1 });
-        gsap.set(entryFog, { autoAlpha: 1, yPercent: 0 });
-        gsap.set(introText, { opacity: 1 });
-        gsap.set(fogPlane, { autoAlpha: 1, rotateX: 0 });
-        gsap.set(jaguarVisuals, { scale: 1 });
-        gsap.set(jaguarEyes, { autoAlpha: 0.28 });
-        gsap.set(jaguarVeil, { autoAlpha: 0.18 });
-        gsap.set(jaguarGhost, { autoAlpha: 1, xPercent: 0 });
-        gsap.set(jaguarLines, { yPercent: 0 });
-        gsap.set(jaguarMeta, { autoAlpha: 1, y: 0 });
-        gsap.set(trail, { strokeDashoffset: 0 });
-
-        const entryReveal = gsap.from(intro, {
-          autoAlpha: 0,
-          y: 28,
-          duration: 0.7,
-          ease: 'power3.out',
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: intro,
-            start: 'top 82%',
-            toggleActions: 'play none none reverse',
-          },
-        });
-
-        const mapReveal = gsap.from(mapLayout, {
-          autoAlpha: 0,
-          y: 34,
-          duration: 0.76,
-          ease: 'power3.out',
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: mapLayout,
-            start: 'top 82%',
-            toggleActions: 'play none none reverse',
-          },
-        });
-
-        const trailReveal = gsap.from(trail, {
-          strokeDashoffset: trailLength,
-          duration: 1.2,
-          ease: 'power2.inOut',
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: mapFigure,
-            start: 'top 72%',
-            toggleActions: 'play none none reverse',
-          },
-        });
-
-        const fogDrift = gsap.fromTo(
-          entryFog,
-          { yPercent: -10, autoAlpha: 0.78 },
-          {
-            yPercent: 16,
-            autoAlpha: 1,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top bottom',
-              end: 'top 34%',
-              scrub: 0.25,
-            },
-          },
-        );
-
-        const jaguarRevealMotion = gsap.from(jaguarVisuals, {
-          scale: 1.08,
-          duration: 1.1,
-          ease: 'power3.out',
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: jaguarReveal,
-            start: 'top 78%',
-            toggleActions: 'play none none reverse',
-          },
-        });
-
-        const jaguarCopyReveal = gsap.from(
-          [jaguarGhost, ...jaguarMeta, ...jaguarLines],
-          {
-            autoAlpha: 0,
-            y: 22,
-            duration: 0.62,
-            stagger: 0.045,
-            ease: 'power3.out',
-            immediateRender: false,
-            scrollTrigger: {
-              trigger: jaguarReveal,
-              start: 'top 66%',
-              toggleActions: 'play none none reverse',
-            },
-          },
-        );
-
-        return () => {
-          entryReveal.kill();
-          mapReveal.kill();
-          trailReveal.kill();
-          fogDrift.kill();
-          jaguarRevealMotion.kill();
-          jaguarCopyReveal.kill();
-        };
       });
 
       scheduleScrollRefresh();
-      return () => media.revert();
+      return () => {
+        editorialDrift.kill();
+        media.revert();
+      };
     },
     {
       scope: sectionRef,
@@ -448,170 +423,258 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
   );
 
   return (
-    <section
-      ref={sectionRef}
-      className={styles.mapTrail}
-      aria-labelledby="map-trail-title"
-      data-header-theme="dark"
-      data-header-chapter="territorios"
-    >
-      <div className={styles.mapTransitionFlow}>
-        <div className={styles.mapTrailIntro} data-map-intro>
-          <div className={styles.mapTrailIntroText} data-map-intro-text>
-            <p>Do mapa à mata</p>
-            <h2 id="map-trail-title">
-              O mapa termina.
-              <em>O rastro continua.</em>
+    <Fragment>
+      <section
+        ref={sectionRef}
+        className={styles.amazonAtlas}
+        aria-labelledby="amazon-atlas-title"
+        data-header-theme="light"
+        data-header-chapter="territorios"
+      >
+        <header className={styles.atlasEditorial} data-atlas-editorial>
+          <div className={styles.atlasEditorialCoordinates} aria-hidden="true">
+            <span>
+              Cordilheira dos Andes<small>Oeste continental</small>
+            </span>
+            <span>
+              Oceano Atlântico<small>Costa oriental</small>
+            </span>
+          </div>
+
+          <div className={styles.atlasEditorialCopy}>
+            <p>Cartografia da Amazônia · escala continental</p>
+            <h2 id="amazon-atlas-title">
+              Uma floresta que não cabe em uma fronteira.
             </h2>
-          </div>
-        </div>
-
-        <div
-          className={styles.mapEntryFog}
-          data-territory-next-fog
-          aria-hidden="true"
-        >
-          <div className={styles.mapEntryFogPlane} data-map-fog-plane />
-        </div>
-      </div>
-
-      <div className={styles.mapTrailStage} data-map-stage>
-        <div
-          className={styles.mapCarryover}
-          data-map-carryover
-          aria-hidden="true"
-        >
-          <Image
-            className={styles.mapCarryoverImage}
-            src="/images/territorios/territorios-transicao-final.png"
-            alt=""
-            fill
-            sizes="100vw"
-          />
-          <span />
-        </div>
-
-        <div
-          className={styles.mapUnderlay}
-          data-map-underlay
-          aria-hidden="true"
-        />
-
-        <div
-          className={styles.mapAtmosphere}
-          data-map-atmosphere
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-        </div>
-
-        <div className={styles.mapTrailLayout} data-map-layout>
-          <div className={styles.mapTrailCoordinates} aria-hidden="true">
-            <span>
-              03° 07&apos; S · 60° 01&apos; W<small>Margem do rio</small>
-            </span>
-            <span>
-              02° 36&apos; S · 60° 14&apos; W
-              <small>Floresta de terra firme</small>
-            </span>
-          </div>
-
-          <header className={styles.mapTrailCopy}>
-            <p>Cartografia da mata · corredor invisível</p>
-            <h3>A floresta desenha caminhos que os olhos não veem.</h3>
             <p>
-              Água, relevo e sombra abrem passagens que só o corpo reconhece.
+              Vista de cima, a Amazônia deixa de ser apenas paisagem e revela
+              sua verdadeira escala.
             </p>
-          </header>
+          </div>
+        </header>
 
-          <figure className={styles.mapFigure} data-map-figure>
+        <div className={styles.atlasStage} data-atlas-stage>
+          <div className={styles.atlasOcean} aria-hidden="true" />
+          <div
+            className={styles.atlasOceanGrid}
+            data-atlas-ocean-grid
+            aria-hidden="true"
+          />
+
+          <div className={styles.atlasChapter} data-atlas-chapter>
+            <span>Amazônia</span>
+            <i />
+            <span>Escala</span>
+          </div>
+
+          <div className={styles.atlasOceanLabels} aria-hidden="true">
+            <span>Oceano Pacífico</span>
+            <span>Oceano Atlântico</span>
+          </div>
+
+          <div className={styles.atlasMapCamera} data-atlas-camera>
             <svg
-              viewBox="0 0 720 720"
-              aria-labelledby="forest-map-title forest-map-description"
+              className={styles.atlasMap}
+              viewBox="0 0 1000 1000"
+              aria-labelledby={`${id}-title ${id}-description`}
             >
-              <title id="forest-map-title">Cartografia abstrata da mata</title>
-              <desc id="forest-map-description">
-                Curvas de relevo, cursos d&apos;água e um rastro simbólico de
-                onça atravessando um território sob a copa.
+              <title id={`${id}-title`}>
+                América do Sul e região amazônica
+              </title>
+              <desc id={`${id}-description`}>
+                Mapa físico da América do Sul com a região amazônica destacada
+                durante a rolagem.
               </desc>
               <defs>
-                <clipPath id={clipId}>
-                  <circle cx="360" cy="360" r="314" />
-                </clipPath>
-                <radialGradient id={clipId + '-glow'} cx="42%" cy="38%" r="62%">
-                  <stop offset="0%" stopColor="#496a50" stopOpacity="0.82" />
-                  <stop offset="58%" stopColor="#8fb9b4" stopOpacity="0.28" />
-                  <stop offset="100%" stopColor="#8fb9b4" stopOpacity="0" />
+                <pattern
+                  id={`${id}-relief`}
+                  patternUnits="userSpaceOnUse"
+                  width="1000"
+                  height="1000"
+                >
+                  <image
+                    href="/images/maps/amazon-relief-texture-v1.png"
+                    width="1000"
+                    height="1000"
+                    preserveAspectRatio="xMidYMid slice"
+                  />
+                </pattern>
+                <linearGradient id={`${id}-shade`} x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stopColor="#dfe9e2" stopOpacity="0.38" />
+                  <stop offset="0.52" stopColor="#718d7c" stopOpacity="0.08" />
+                  <stop offset="1" stopColor="#020806" stopOpacity="0.72" />
+                </linearGradient>
+                <radialGradient
+                  id={`${id}-amazon-glow`}
+                  cx="48%"
+                  cy="37%"
+                  r="48%"
+                >
+                  <stop offset="0" stopColor="#8fcfc5" stopOpacity="0.56" />
+                  <stop offset="0.66" stopColor="#456f62" stopOpacity="0.26" />
+                  <stop offset="1" stopColor="#17362c" stopOpacity="0.04" />
                 </radialGradient>
+                <filter
+                  id={`${id}-land-shadow`}
+                  x="-30%"
+                  y="-30%"
+                  width="160%"
+                  height="170%"
+                >
+                  <feDropShadow
+                    dx="0"
+                    dy="22"
+                    stdDeviation="24"
+                    floodColor="#000"
+                    floodOpacity="0.72"
+                  />
+                </filter>
+                <filter
+                  id={`${id}-marker-glow`}
+                  x="-300%"
+                  y="-300%"
+                  width="700%"
+                  height="700%"
+                >
+                  <feGaussianBlur stdDeviation="8" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <clipPath id={`${id}-continent`}>
+                  {countries.map((country) => (
+                    <path key={country.name} d={country.path} />
+                  ))}
+                </clipPath>
               </defs>
 
-              <circle className={styles.mapFill} cx="360" cy="360" r="314" />
-              <g className={styles.mapGrid} clipPath={'url(#' + clipId + ')'}>
-                <path d="M40 240 H690" />
-                <path d="M40 360 H690" />
-                <path d="M40 480 H690" />
-                <path d="M240 35 V690" />
-                <path d="M360 35 V690" />
-                <path d="M480 35 V690" />
+              <g filter={`url(#${id}-land-shadow)`}>
+                {countries.map((country) => (
+                  <path
+                    key={country.name}
+                    className={styles.atlasCountry}
+                    d={country.path}
+                    fill={`url(#${id}-relief)`}
+                  />
+                ))}
               </g>
-              <circle
-                className={styles.mapAmazonGlow}
-                cx="314"
-                cy="312"
-                r="280"
-                fill={'url(#' + clipId + '-glow)'}
-                clipPath={'url(#' + clipId + ')'}
-              />
 
-              <g
-                className={styles.mapContours}
-                clipPath={'url(#' + clipId + ')'}
-              >
-                {contourPaths.map((path) => (
-                  <path d={path} key={path} />
+              <g clipPath={`url(#${id}-continent)`}>
+                <rect
+                  className={styles.atlasLandShade}
+                  x="180"
+                  y="55"
+                  width="610"
+                  height="815"
+                  fill={`url(#${id}-shade)`}
+                />
+                <path
+                  className={styles.atlasAmazonFill}
+                  data-atlas-amazon
+                  d={amazonPath}
+                  fill={`url(#${id}-amazon-glow)`}
+                />
+                <g className={styles.atlasRivers}>
+                  <path d="M292 252C359 276 407 255 468 267C522 278 584 274 652 250" />
+                  <path d="M330 305C391 295 433 312 482 326C528 339 568 333 622 306" />
+                  <path d="M391 186C398 229 423 248 468 267" />
+                  <path d="M511 162C508 203 492 238 468 267" />
+                </g>
+              </g>
+
+              <g className={styles.atlasBorders}>
+                {countries.map((country) => (
+                  <path key={country.name} d={country.path} />
                 ))}
               </g>
 
               <path
-                className={styles.mapRiver}
-                clipPath={'url(#' + clipId + ')'}
-                d="M86 82 C168 152 143 241 235 283 C315 320 337 392 309 471 C281 548 346 617 463 680"
+                className={styles.atlasAmazonBase}
+                d={amazonPath}
+                aria-hidden="true"
               />
-              <circle className={styles.mapOutline} cx="360" cy="360" r="314" />
-
               <path
-                className={styles.mapTrailLine}
-                data-map-trail
-                d="M165 504 C218 449 283 459 315 408 C354 346 329 283 390 247 C441 217 503 239 551 184"
+                className={styles.atlasAmazonRoute}
+                data-atlas-route
+                d={amazonPath}
+                aria-hidden="true"
               />
 
-              <g className={styles.mapOrigin} data-map-label>
-                <circle cx="165" cy="504" r="5" />
-                <circle cx="165" cy="504" r="14" />
-              </g>
-
-              <g className={styles.mapDestination} data-map-label>
-                <circle cx="551" cy="184" r="5" />
-                <circle cx="551" cy="184" r="14" />
+              <g
+                className={styles.atlasMarker}
+                data-atlas-marker
+                filter={`url(#${id}-marker-glow)`}
+                aria-hidden="true"
+              >
+                <circle r="19" />
+                <circle r="7" />
               </g>
             </svg>
 
-            <figcaption>
-              <span data-map-label>Território sob a copa</span>
-              <span data-map-label>Rastro da onça</span>
-            </figcaption>
-          </figure>
+            <div className={styles.atlasMapLabel} data-atlas-label>
+              <i aria-hidden="true" />
+              <span>Bioma amazônico</span>
+              <strong>Escala continental</strong>
+            </div>
+          </div>
 
-          <p className={styles.mapScale} data-map-label>
-            Sem fronteira. Apenas presença.
-          </p>
-        </div>
+          <div className={styles.atlasCardsOuter}>
+            <div className={styles.atlasCardsSticky} data-atlas-cards>
+              <a
+                className={styles.atlasFilmCard}
+                data-atlas-film
+                data-cursor-label="Assistir"
+                href={documentaryUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Assistir ao documentário da abertura no YouTube (abre em nova aba)"
+              >
+                <span className={styles.atlasFilmImage} aria-hidden="true">
+                  <Image
+                    src="/images/hero-amazon-dawn.png"
+                    alt=""
+                    fill
+                    sizes="(max-width: 720px) 92vw, 31rem"
+                  />
+                  <i />
+                </span>
+                <span className={styles.atlasFilmCopy}>
+                  <span>
+                    <small>Documentário</small>
+                    Assistir ao filme
+                  </span>
+                  <svg viewBox="0 0 40 40" aria-hidden="true">
+                    <circle cx="20" cy="20" r="19" />
+                    <path d="m17 14 10 6-10 6Z" />
+                  </svg>
+                </span>
+              </a>
 
-        <div className={styles.mapJaguarReveal} data-map-jaguar-reveal>
-          {children}
+              <aside className={styles.atlasStatsCard} data-atlas-stats>
+                <p className={styles.atlasCardEyebrow}>A floresta em escala</p>
+                <dl>
+                  <div>
+                    <dt>Extensão do bioma</dt>
+                    <dd>6,7 milhões km²</dd>
+                  </div>
+                  <div>
+                    <dt>Presença territorial</dt>
+                    <dd>8 países + Guiana Francesa</dd>
+                  </div>
+                  <div>
+                    <dt>Faixa média diária</dt>
+                    <dd>20–25 °C</dd>
+                  </div>
+                </dl>
+                <small>Fontes: WWF, OTCA e NASA · valores de referência</small>
+              </aside>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {children}
+    </Fragment>
   );
 }

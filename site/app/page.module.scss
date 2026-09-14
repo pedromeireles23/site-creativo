@@ -13,6 +13,878 @@
   }
 }
 
+/* Amazon atlas — a long, free-flowing cartographic journey. */
+.amazonAtlas {
+  position: relative;
+  z-index: 3;
+  overflow: clip;
+  background: #050907;
+}
+
+.atlasEditorial {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  min-height: clamp(28rem, 52svh, 38rem);
+  padding: clamp(7.5rem, 12svh, 10rem) var(--page-grid-edge) 5rem;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 50% -30%,
+      rgb(255 255 255 / 94%),
+      transparent 52%
+    ),
+    var(--ivory-50);
+  color: var(--ink-900);
+
+  &::after {
+    position: absolute;
+    right: var(--page-grid-edge);
+    bottom: 0;
+    left: var(--page-grid-edge);
+    height: 1px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgb(29 47 39 / 36%) 0 4px,
+      transparent 4px 8px
+    );
+    content: '';
+  }
+}
+
+.atlasEditorialCoordinates {
+  position: absolute;
+  top: clamp(6.4rem, 9svh, 8rem);
+  right: var(--page-grid-edge);
+  left: var(--page-grid-edge);
+  display: flex;
+  justify-content: space-between;
+  color: rgb(40 57 49 / 56%);
+  font-family: var(--font-display);
+  font-size: 0.67rem;
+  letter-spacing: 0.09em;
+  line-height: 1.2;
+  text-transform: uppercase;
+
+  span:last-child {
+    text-align: right;
+  }
+
+  small {
+    display: block;
+    margin-top: 0.35rem;
+    font-family: var(--font-editorial);
+    font-size: 0.78rem;
+    font-style: italic;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}
+
+.atlasEditorialCopy {
+  align-self: center;
+  width: min(68rem, 82vw);
+  margin: 1.5rem auto 0;
+  text-align: center;
+
+  > p:first-child {
+    margin-bottom: 1.15rem;
+    font-family: var(--font-interface);
+    font-size: 0.63rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    max-width: 62rem;
+    margin: 0 auto;
+    font-family: var(--font-editorial);
+    font-size: clamp(2.55rem, 4.45vw, 5.35rem);
+    font-weight: 400;
+    letter-spacing: -0.055em;
+    line-height: 0.91;
+    text-wrap: balance;
+    text-transform: uppercase;
+  }
+
+  > p:last-child {
+    max-width: 42rem;
+    margin: 1.45rem auto 0;
+    color: rgb(26 42 35 / 60%);
+    font-size: clamp(0.82rem, 1vw, 1rem);
+    line-height: 1.55;
+    text-wrap: balance;
+  }
+}
+
+.atlasStage {
+  position: relative;
+  z-index: 2;
+  height: 145svh;
+  min-height: 64rem;
+  overflow: hidden;
+  isolation: isolate;
+  background: #030706;
+  color: var(--ivory-50);
+}
+
+.atlasOcean {
+  position: absolute;
+  z-index: -4;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 36%, rgb(24 59 47 / 24%), transparent 33%),
+    radial-gradient(circle at 72% 56%, rgb(35 70 63 / 11%), transparent 30%),
+    linear-gradient(180deg, #050908 0%, #020605 100%);
+
+  &::after {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+      circle,
+      rgb(222 240 229 / 36%) 0 0.45px,
+      transparent 0.7px
+    );
+    background-size: 4px 4px;
+    opacity: 0.055;
+    mix-blend-mode: screen;
+    content: '';
+  }
+}
+
+.atlasOceanGrid {
+  position: absolute;
+  z-index: -3;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(151 190 177 / 7%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(151 190 177 / 7%) 1px, transparent 1px);
+  background-size: 8.333vw 8.333vw;
+  mask-image: radial-gradient(circle at center, #000 18%, transparent 78%);
+  will-change: background-position;
+}
+
+.atlasChapter {
+  position: absolute;
+  z-index: 5;
+  top: clamp(5.25rem, 9svh, 7.5rem);
+  left: var(--page-grid-edge);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: rgb(225 235 228 / 62%);
+  font-family: var(--font-interface);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+
+  i {
+    width: clamp(2rem, 3.5vw, 4rem);
+    height: 1px;
+    background: currentColor;
+  }
+}
+
+.atlasOceanLabels {
+  position: absolute;
+  z-index: 0;
+  top: 24svh;
+  right: 7vw;
+  left: 7vw;
+  display: flex;
+  justify-content: space-between;
+  color: rgb(197 216 207 / 19%);
+  font-family: var(--font-display);
+  font-size: clamp(0.64rem, 0.9vw, 0.82rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  span:last-child {
+    translate: 0 90svh;
+  }
+}
+
+.atlasMapCamera {
+  position: absolute;
+  z-index: 1;
+  top: 3svh;
+  right: 0;
+  left: 0;
+  width: min(70vw, 57rem);
+  height: 100svh;
+  min-height: 43rem;
+  margin: 0 auto;
+  will-change: transform;
+}
+
+.atlasMap {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.atlasCountry {
+  opacity: 0.93;
+}
+
+.atlasLandShade {
+  mix-blend-mode: soft-light;
+}
+
+.atlasBorders {
+  fill: none;
+  stroke: rgb(221 235 225 / 19%);
+  stroke-width: 1.15;
+  vector-effect: non-scaling-stroke;
+}
+
+.atlasAmazonFill {
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+.atlasRivers {
+  fill: none;
+  stroke: rgb(171 225 217 / 42%);
+  stroke-linecap: round;
+  stroke-width: 2.1;
+  vector-effect: non-scaling-stroke;
+}
+
+.atlasAmazonBase,
+.atlasAmazonRoute {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.atlasAmazonBase {
+  stroke: rgb(142 211 201 / 22%);
+  stroke-width: 1.2;
+}
+
+.atlasAmazonRoute {
+  stroke: #92e1d4;
+  stroke-width: 2.2;
+}
+
+.atlasMarker {
+  fill: none;
+  stroke: #9ce9dd;
+  vector-effect: non-scaling-stroke;
+
+  circle:first-child {
+    fill: rgb(98 217 203 / 5%);
+    stroke-opacity: 0.38;
+    stroke-width: 1;
+  }
+
+  circle:last-child {
+    fill: #9ce9dd;
+    stroke: rgb(239 255 251 / 74%);
+    stroke-width: 1.5;
+  }
+}
+
+.atlasMapLabel {
+  position: absolute;
+  z-index: 4;
+  top: 28%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  min-width: 13rem;
+  color: var(--ivory-50);
+  text-align: center;
+  translate: -50% 0;
+  transform-origin: 50% 50%;
+
+  i {
+    position: relative;
+    width: 1px;
+    height: clamp(2.2rem, 6svh, 4.8rem);
+    margin-bottom: 0.8rem;
+    background: linear-gradient(transparent, #9ce9dd);
+
+    &::after {
+      position: absolute;
+      bottom: -0.2rem;
+      left: 50%;
+      width: 0.4rem;
+      height: 0.4rem;
+      border-radius: 50%;
+      background: #9ce9dd;
+      box-shadow: 0 0 1.2rem rgb(156 233 221 / 70%);
+      translate: -50% 0;
+      content: '';
+    }
+  }
+
+  span {
+    font-family: var(--font-editorial);
+    font-size: clamp(1rem, 1.35vw, 1.35rem);
+    font-style: italic;
+  }
+
+  strong {
+    margin-top: 0.3rem;
+    font-family: var(--font-display);
+    font-size: clamp(0.72rem, 0.9vw, 0.9rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+}
+
+.atlasCardsOuter,
+.atlasCardsSticky {
+  display: contents;
+}
+
+.atlasStatsCard,
+.atlasFilmCard {
+  position: absolute;
+  z-index: 7;
+  overflow: hidden;
+  border: 1px solid rgb(207 232 219 / 17%);
+  border-radius: 0.35rem;
+  background: rgb(8 14 12 / 79%);
+  box-shadow: 0 1.75rem 5rem rgb(0 0 0 / 32%);
+  backdrop-filter: blur(18px) saturate(1.12);
+  will-change: transform;
+
+  &::before {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    right: 12%;
+    left: 12%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(215 246 234 / 42%),
+      transparent
+    );
+    content: '';
+  }
+}
+
+.atlasStatsCard {
+  top: 54svh;
+  bottom: auto;
+  left: clamp(1.25rem, 3.2vw, 4rem);
+  width: min(36vw, 35rem);
+  padding: clamp(1.25rem, 2.1vw, 2.15rem);
+
+  dl {
+    margin: 0;
+  }
+
+  dl > div {
+    display: grid;
+    gap: 0.5rem;
+    padding: clamp(0.9rem, 1.45svh, 1.3rem) 0;
+    border-bottom: 1px dotted rgb(208 228 217 / 21%);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  dt {
+    color: rgb(230 240 233 / 67%);
+    font-family: var(--font-editorial);
+    font-size: clamp(0.78rem, 0.95vw, 0.98rem);
+    font-style: italic;
+  }
+
+  dd {
+    margin: 0;
+    font-family: var(--font-interface);
+    font-size: clamp(1.45rem, 2.45vw, 2.7rem);
+    font-weight: 400;
+    letter-spacing: -0.055em;
+    line-height: 1;
+  }
+
+  > small {
+    display: block;
+    margin-top: 0.8rem;
+    color: rgb(213 228 219 / 38%);
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+}
+
+.atlasCardEyebrow {
+  margin-bottom: 0.55rem;
+  color: #9ce9dd;
+  font-size: 0.61rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+
+  &::before {
+    display: inline-block;
+    width: 0.28rem;
+    height: 0.28rem;
+    margin-right: 0.55rem;
+    background: currentColor;
+    vertical-align: 0.08rem;
+    content: '';
+  }
+}
+
+.atlasFilmCard {
+  right: clamp(1.25rem, 3.2vw, 4rem);
+  top: 54svh;
+  bottom: auto;
+  display: block;
+  width: min(31vw, 31rem);
+  padding: 0.65rem;
+  color: var(--ivory-50);
+  text-decoration: none;
+}
+
+.atlasFilmImage {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: #11221b;
+
+  img {
+    object-fit: cover;
+    filter: saturate(0.72) contrast(1.05) brightness(0.72);
+    transition:
+      transform 0.9s cubic-bezier(0.2, 0.72, 0.22, 1),
+      filter 0.6s ease;
+  }
+
+  i {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgb(2 7 5 / 8%), rgb(2 7 5 / 42%)),
+      radial-gradient(circle at 50% 45%, transparent 0 25%, rgb(0 0 0 / 20%));
+  }
+}
+
+.atlasFilmCopy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.95rem 0.35rem 0.35rem;
+  font-family: var(--font-editorial);
+  font-size: clamp(1rem, 1.25vw, 1.3rem);
+  font-style: italic;
+
+  > span {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  small {
+    color: rgb(221 235 226 / 48%);
+    font-family: var(--font-interface);
+    font-size: 0.54rem;
+    font-style: normal;
+    letter-spacing: 0.17em;
+    text-transform: uppercase;
+  }
+
+  svg {
+    width: 2.35rem;
+    height: 2.35rem;
+    fill: none;
+    stroke: rgb(231 244 236 / 58%);
+    stroke-width: 1;
+
+    path {
+      fill: #9ce9dd;
+      stroke: none;
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .atlasFilmCard:hover .atlasFilmImage img,
+  .atlasFilmCard:focus-visible .atlasFilmImage img {
+    filter: saturate(0.9) contrast(1.03) brightness(0.86);
+    transform: scale(1.045);
+  }
+}
+
+@media (max-width: 1023px) {
+  .atlasEditorial {
+    min-height: clamp(31rem, 62svh, 42rem);
+    padding-right: clamp(1.25rem, 6vw, 4rem);
+    padding-left: clamp(1.25rem, 6vw, 4rem);
+  }
+
+  .atlasEditorialCoordinates {
+    right: clamp(1.25rem, 6vw, 4rem);
+    left: clamp(1.25rem, 6vw, 4rem);
+  }
+
+  .atlasEditorialCopy {
+    width: min(100%, 42rem);
+
+    h2 {
+      font-size: clamp(2.25rem, 8vw, 4.5rem);
+    }
+  }
+
+  .atlasStage,
+  .atlasMapCamera {
+    min-height: 40rem;
+  }
+
+  .atlasStage {
+    height: 150svh;
+    min-height: 60rem;
+  }
+
+  .atlasMapCamera {
+    top: 1svh;
+    width: min(100vw, 47rem);
+  }
+
+  .atlasChapter {
+    top: 5.5rem;
+    left: clamp(1rem, 4vw, 2rem);
+  }
+
+  .atlasOceanLabels {
+    top: 22svh;
+    right: 1.25rem;
+    left: 1.25rem;
+
+    span:first-child {
+      visibility: hidden;
+    }
+  }
+
+  .atlasMapLabel {
+    top: 24%;
+  }
+
+  .atlasStatsCard,
+  .atlasFilmCard {
+    top: auto;
+    right: clamp(1rem, 4vw, 2rem);
+    bottom: auto;
+    left: clamp(1rem, 4vw, 2rem);
+    width: auto;
+    max-width: 33rem;
+    margin: 0 auto;
+  }
+
+  .atlasStatsCard {
+    top: 76svh;
+    padding: 1rem 1.2rem;
+
+    dl {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.85rem;
+    }
+
+    dl > div {
+      align-content: end;
+      min-width: 0;
+      padding: 0.8rem 0;
+      border-right: 1px dotted rgb(208 228 217 / 21%);
+      border-bottom: 0;
+
+      &:last-child {
+        border-right: 0;
+      }
+    }
+
+    dd {
+      font-size: clamp(1.18rem, 4.4vw, 1.8rem);
+      text-wrap: balance;
+    }
+
+    > small {
+      margin-top: 0.25rem;
+    }
+  }
+
+  .atlasFilmCard {
+    top: 118svh;
+    max-width: 31rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .amazonAtlas {
+    overflow: visible;
+  }
+
+  .atlasStage {
+    display: block;
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .atlasMapCamera {
+    position: relative;
+    z-index: 1;
+    top: auto;
+    right: auto;
+    left: auto;
+    width: 100%;
+    height: 119.5vw;
+    min-height: 0;
+    margin: 0;
+    will-change: transform;
+  }
+
+  .atlasCardsOuter {
+    position: relative;
+    z-index: 7;
+    display: block;
+  }
+
+  .atlasCardsSticky {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 0.625rem;
+  }
+
+  .atlasFilmCard,
+  .atlasStatsCard {
+    position: relative;
+    z-index: 7;
+    inset: auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    opacity: 1 !important;
+    transform: none !important;
+    will-change: auto;
+  }
+
+  .atlasFilmCard {
+    padding: 0.625rem;
+
+    .atlasFilmCopy {
+      position: absolute;
+      z-index: 2;
+      inset: 0.625rem;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0;
+      font-family: var(--font-interface);
+      font-size: 0.92rem;
+      font-style: normal;
+      font-weight: 600;
+
+      > span {
+        display: block;
+      }
+
+      small,
+      circle {
+        display: none;
+      }
+
+      svg {
+        width: 1.1rem;
+        height: 1.1rem;
+      }
+    }
+  }
+
+  .atlasStatsCard {
+    padding: 2rem 1.25rem;
+
+    dl {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+
+    dl > div {
+      display: grid;
+      gap: 0.3rem;
+      padding: 0;
+      border-right: 0;
+      border-bottom: 0;
+    }
+
+    dt {
+      max-width: none;
+      font-size: 1.125rem;
+      line-height: 1.2;
+    }
+
+    dd {
+      max-width: none;
+      font-size: clamp(1.35rem, 7.35vw, 1.72rem);
+      line-height: 1.75;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    > .atlasCardEyebrow,
+    > small {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 639px) {
+  .atlasEditorial {
+    min-height: 72svh;
+    padding-top: 8.5rem;
+    padding-bottom: 4rem;
+  }
+
+  .atlasEditorialCoordinates {
+    top: 6.8rem;
+
+    span:first-child {
+      display: none;
+    }
+
+    span:last-child {
+      margin-left: auto;
+    }
+  }
+
+  .atlasEditorialCopy {
+    > p:first-child {
+      max-width: 18rem;
+      margin-right: auto;
+      margin-left: auto;
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: clamp(2.25rem, 11.5vw, 3.5rem);
+      line-height: 0.94;
+    }
+  }
+
+  .atlasMapCamera {
+    width: 104vw;
+    margin-left: -2vw;
+  }
+
+  .atlasMapLabel {
+    top: 26%;
+  }
+
+  .atlasOceanLabels {
+    top: 22svh;
+  }
+}
+
+@media (max-width: 1023px) and (max-height: 700px) and (orientation: landscape),
+  (prefers-reduced-motion: reduce) {
+  .amazonAtlas {
+    overflow: visible;
+  }
+
+  .atlasEditorial {
+    transform: none !important;
+  }
+
+  .atlasStage {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    height: auto;
+    min-height: auto;
+    padding: 4.5rem clamp(1rem, 4vw, 3rem) 3rem;
+  }
+
+  .atlasCardsOuter,
+  .atlasCardsSticky {
+    display: contents;
+  }
+
+  .atlasMapCamera {
+    position: relative;
+    grid-column: 1 / -1;
+    top: auto;
+    right: auto;
+    left: auto;
+    width: min(100%, 58rem);
+    height: min(76svh, 44rem);
+    min-height: 30rem;
+    margin: 0 auto;
+    translate: 0;
+    transform: none !important;
+  }
+
+  .atlasMapLabel {
+    top: 20%;
+  }
+
+  .atlasStatsCard,
+  .atlasFilmCard {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .atlasFilmCard {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: end;
+  }
+
+  .atlasStatsCard {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .atlasChapter,
+  .atlasOceanLabels {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 639px) {
+  .atlasStage {
+    grid-template-columns: 1fr;
+  }
+
+  .atlasMapCamera {
+    height: 68svh;
+    min-height: 27rem;
+  }
+
+  .atlasFilmCard,
+  .atlasStatsCard {
+    grid-column: 1;
+  }
+
+  .atlasFilmCard {
+    grid-row: 2;
+  }
+
+  .atlasStatsCard {
+    grid-row: 3;
+  }
+}
+
 .grid {
   position: fixed;
   z-index: 60;
@@ -1232,6 +2104,7 @@
   z-index: 63;
   inset: 0;
   pointer-events: none;
+  overflow: clip;
 }
 
 .mapTrailStage {
@@ -1482,6 +2355,7 @@
     z-index: 63;
     inset: auto;
     display: flow-root;
+    overflow: clip;
   }
 
   .mapTrailIntro {
@@ -3314,46 +4188,14 @@
   }
 
   .macawTransitionEdge {
-    position: absolute;
-    z-index: 10;
-    top: -15svh;
-    right: -14vw;
-    left: -14vw;
-    display: block;
-    height: 25svh;
-    background:
-      radial-gradient(
-        ellipse at 20% 72%,
-        rgb(243 240 231 / 78%) 0%,
-        rgb(220 231 223 / 46%) 38%,
-        transparent 72%
-      ),
-      radial-gradient(
-        ellipse at 80% 76%,
-        rgb(243 240 231 / 72%) 0%,
-        rgb(220 231 223 / 38%) 42%,
-        transparent 74%
-      ),
-      linear-gradient(180deg, transparent 0%, rgb(243 240 231 / 88%) 100%);
-    filter: blur(13px);
-    pointer-events: none;
+    display: none;
   }
 
   .macawStage {
     position: sticky;
     top: 0;
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      transparent 0,
-      #000 var(--macaw-entry-feather, 0svh),
-      #000 100%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      transparent 0,
-      #000 var(--macaw-entry-feather, 0svh),
-      #000 100%
-    );
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 
   .macawBackground {

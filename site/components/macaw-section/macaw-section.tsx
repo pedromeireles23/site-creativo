@@ -141,62 +141,16 @@ export function MacawSection() {
 
       media.add(MOTION_QUERIES.compact, () => {
         const compactStrips = strips.slice(0, 5);
-        const entryFeather = { value: 16 };
 
         gsap.set(stage, {
           autoAlpha: 1,
-          clipPath: 'inset(0 0 100% 0)',
+          clipPath: 'none',
         });
-        stage.style.setProperty('--macaw-entry-feather', '16svh');
+        stage.style.removeProperty('--macaw-entry-feather');
         gsap.set(transitionEdge, {
           autoAlpha: 0,
-          yPercent: 34,
+          yPercent: 0,
         });
-
-        const entryReveal = gsap.timeline({
-          defaults: { ease: 'none' },
-          scrollTrigger: {
-            trigger: section,
-            start: 'top bottom',
-            end: 'top top',
-            scrub: 0.28,
-            invalidateOnRefresh: true,
-          },
-        });
-
-        entryReveal
-          .to(
-            entryFeather,
-            {
-              value: 0,
-              duration: 1,
-              onUpdate: () => {
-                stage.style.setProperty(
-                  '--macaw-entry-feather',
-                  `${entryFeather.value}svh`,
-                );
-              },
-            },
-            0,
-          )
-          .to(
-            stage,
-            {
-              clipPath: 'inset(0 0 0% 0)',
-              duration: 1,
-            },
-            0,
-          )
-          .to(
-            transitionEdge,
-            { autoAlpha: 0.9, yPercent: 0, duration: 0.28 },
-            0.06,
-          )
-          .to(
-            transitionEdge,
-            { autoAlpha: 0, yPercent: -28, duration: 0.34 },
-            0.64,
-          );
 
         gsap.set(background, { scale: 1.055 });
         gsap.set(bird, {
@@ -257,7 +211,6 @@ export function MacawSection() {
           .to(stage, { autoAlpha: 0, duration: 0.08 }, 1.04);
 
         return () => {
-          entryReveal.kill();
           timeline.kill();
           stage.style.removeProperty('--macaw-entry-feather');
         };
