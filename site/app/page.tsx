@@ -14,6 +14,7 @@ import { VeinsSection } from '@/components/veins-section/veins-section';
 import styles from './page.module.scss';
 
 const showArchivedEnding = false;
+const showJaguarSection = false;
 
 export default function Home() {
   return (
@@ -57,7 +58,7 @@ export default function Home() {
           <TerritoriesSection />
 
           <MapTrailSection>
-            <JaguarSection />
+            {showJaguarSection && <JaguarSection />}
           </MapTrailSection>
         </div>
 

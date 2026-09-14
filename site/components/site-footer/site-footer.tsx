@@ -5,13 +5,13 @@ export function SiteFooter() {
     <footer
       className={styles.siteFooter}
       aria-label="Rodapé"
-      data-header-theme="light"
+      data-header-theme="dark"
       data-header-chapter="documentario"
     >
       <div className={styles.siteFooterGrid} aria-hidden="true" />
 
       <div className={styles.siteFooterWordmark}>
-        <p>amazonia</p>
+        <p>Floresta Viva</p>
       </div>
     </footer>
   );

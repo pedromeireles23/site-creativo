@@ -85,6 +85,9 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
         '[data-atlas-editorial]',
       );
       const stage = section.querySelector<HTMLElement>('[data-atlas-stage]');
+      const mapTrack = section.querySelector<HTMLElement>(
+        '[data-atlas-map-track]',
+      );
       const camera = section.querySelector<HTMLElement>('[data-atlas-camera]');
       const route = section.querySelector<SVGPathElement>('[data-atlas-route]');
       const marker = section.querySelector<SVGGElement>('[data-atlas-marker]');
@@ -104,6 +107,7 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
       if (
         !editorial ||
         !stage ||
+        !mapTrack ||
         !camera ||
         !route ||
         !marker ||
@@ -148,20 +152,22 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
 
       const media = gsap.matchMedia();
 
-      const editorialDrift = gsap.fromTo(
-        editorial,
-        { yPercent: -4 },
-        {
-          yPercent: 18,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: editorial,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
+      media.add('(min-width: 768px)', () => {
+        gsap.fromTo(
+          editorial,
+          { yPercent: -4 },
+          {
+            yPercent: 18,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: editorial,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true,
+            },
           },
-        },
-      );
+        );
+      });
 
       const createJourney = (compact: boolean) => {
         const journeyStart = 'top 82%';
@@ -318,6 +324,9 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
       };
 
       const createPhoneJourney = () => {
+        gsap.set(camera, { clearProps: 'transform' });
+        gsap.set(route, { strokeDashoffset: routeLength });
+        gsap.set(markerPosition, { progress: 0, onUpdate: placeMarker });
         gsap.set(oceanGrid, { clearProps: 'backgroundPosition' });
         gsap.set(chapter, { autoAlpha: 1, y: 0 });
         gsap.set(amazon, { autoAlpha: 0.08 });
@@ -327,20 +336,21 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
           clearProps: 'transform',
         });
 
-        // White Desert keeps the map in the section's natural flow and lets
-        // one unified card stack pass over it. This light parallax compensates
-        // part of the page movement without pinning the whole viewport.
-        const mapParallax = gsap.fromTo(
+        // The track keeps its place in the page while the map travels more slowly.
+        // Cards stay in normal flow and progressively cover this background layer.
+        const mapDrift = gsap.fromTo(
           camera,
-          { yPercent: -5 },
+          { y: 0 },
           {
-            yPercent: 100,
+            y: () =>
+              Math.max(0, stage.offsetHeight - mapTrack.offsetTop) * 0.72,
             ease: 'none',
             scrollTrigger: {
-              trigger: stage,
-              start: 'top bottom',
+              trigger: mapTrack,
+              start: 'top top',
+              endTrigger: stage,
               end: 'bottom top',
-              scrub: true,
+              scrub: 0.6,
               invalidateOnRefresh: true,
             },
           },
@@ -349,9 +359,9 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
         const svgTimeline = gsap.timeline({
           defaults: { ease: 'none' },
           scrollTrigger: {
-            trigger: camera,
+            trigger: mapTrack,
             start: 'top 82%',
-            end: 'bottom 22%',
+            end: 'center 35%',
             scrub: true,
             invalidateOnRefresh: true,
             onEnter: () => {
@@ -381,7 +391,7 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
           .to(label, { autoAlpha: 1, y: 0, duration: 0.32 }, 0.44);
 
         return () => {
-          mapParallax.kill();
+          mapDrift.kill();
           svgTimeline.kill();
         };
       };
@@ -397,7 +407,6 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
       );
 
       media.add(MOTION_QUERIES.shortLandscape, () => {
-        if (window.matchMedia('(max-width: 767px)').matches) return;
         markerPosition.progress = 0.74;
         placeMarker();
         gsap.set(route, { strokeDashoffset: 0 });
@@ -411,7 +420,6 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
 
       scheduleScrollRefresh();
       return () => {
-        editorialDrift.kill();
         media.revert();
       };
     },
@@ -472,150 +480,166 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
             <span>Oceano Atlântico</span>
           </div>
 
-          <div className={styles.atlasMapCamera} data-atlas-camera>
-            <svg
-              className={styles.atlasMap}
-              viewBox="0 0 1000 1000"
-              aria-labelledby={`${id}-title ${id}-description`}
-            >
-              <title id={`${id}-title`}>
-                América do Sul e região amazônica
-              </title>
-              <desc id={`${id}-description`}>
-                Mapa físico da América do Sul com a região amazônica destacada
-                durante a rolagem.
-              </desc>
-              <defs>
-                <pattern
-                  id={`${id}-relief`}
-                  patternUnits="userSpaceOnUse"
-                  width="1000"
-                  height="1000"
-                >
-                  <image
-                    href="/images/maps/amazon-relief-texture-v1.png"
+          <div className={styles.atlasMapTrack} data-atlas-map-track>
+            <div className={styles.atlasMapCamera} data-atlas-camera>
+              <svg
+                className={styles.atlasMap}
+                viewBox="0 0 1000 1000"
+                aria-labelledby={`${id}-title ${id}-description`}
+              >
+                <title id={`${id}-title`}>
+                  América do Sul e região amazônica
+                </title>
+                <desc id={`${id}-description`}>
+                  Mapa físico da América do Sul com a região amazônica destacada
+                  durante a rolagem.
+                </desc>
+                <defs>
+                  <pattern
+                    id={`${id}-relief`}
+                    patternUnits="userSpaceOnUse"
                     width="1000"
                     height="1000"
-                    preserveAspectRatio="xMidYMid slice"
+                  >
+                    <image
+                      href="/images/maps/amazon-relief-texture-v1.png"
+                      width="1000"
+                      height="1000"
+                      preserveAspectRatio="xMidYMid slice"
+                    />
+                  </pattern>
+                  <linearGradient
+                    id={`${id}-shade`}
+                    x1="0"
+                    y1="0"
+                    x2="1"
+                    y2="1"
+                  >
+                    <stop offset="0" stopColor="#dfe9e2" stopOpacity="0.38" />
+                    <stop
+                      offset="0.52"
+                      stopColor="#718d7c"
+                      stopOpacity="0.08"
+                    />
+                    <stop offset="1" stopColor="#020806" stopOpacity="0.72" />
+                  </linearGradient>
+                  <radialGradient
+                    id={`${id}-amazon-glow`}
+                    cx="48%"
+                    cy="37%"
+                    r="48%"
+                  >
+                    <stop offset="0" stopColor="#8fcfc5" stopOpacity="0.56" />
+                    <stop
+                      offset="0.66"
+                      stopColor="#456f62"
+                      stopOpacity="0.26"
+                    />
+                    <stop offset="1" stopColor="#17362c" stopOpacity="0.04" />
+                  </radialGradient>
+                  <filter
+                    id={`${id}-land-shadow`}
+                    x="-30%"
+                    y="-30%"
+                    width="160%"
+                    height="170%"
+                  >
+                    <feDropShadow
+                      dx="0"
+                      dy="22"
+                      stdDeviation="24"
+                      floodColor="#000"
+                      floodOpacity="0.72"
+                    />
+                  </filter>
+                  <filter
+                    id={`${id}-marker-glow`}
+                    x="-300%"
+                    y="-300%"
+                    width="700%"
+                    height="700%"
+                  >
+                    <feGaussianBlur stdDeviation="8" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                  <clipPath id={`${id}-continent`}>
+                    {countries.map((country) => (
+                      <path key={country.name} d={country.path} />
+                    ))}
+                  </clipPath>
+                </defs>
+
+                <g filter={`url(#${id}-land-shadow)`}>
+                  {countries.map((country) => (
+                    <path
+                      key={country.name}
+                      className={styles.atlasCountry}
+                      d={country.path}
+                      fill={`url(#${id}-relief)`}
+                    />
+                  ))}
+                </g>
+
+                <g clipPath={`url(#${id}-continent)`}>
+                  <rect
+                    className={styles.atlasLandShade}
+                    x="180"
+                    y="55"
+                    width="610"
+                    height="815"
+                    fill={`url(#${id}-shade)`}
                   />
-                </pattern>
-                <linearGradient id={`${id}-shade`} x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#dfe9e2" stopOpacity="0.38" />
-                  <stop offset="0.52" stopColor="#718d7c" stopOpacity="0.08" />
-                  <stop offset="1" stopColor="#020806" stopOpacity="0.72" />
-                </linearGradient>
-                <radialGradient
-                  id={`${id}-amazon-glow`}
-                  cx="48%"
-                  cy="37%"
-                  r="48%"
-                >
-                  <stop offset="0" stopColor="#8fcfc5" stopOpacity="0.56" />
-                  <stop offset="0.66" stopColor="#456f62" stopOpacity="0.26" />
-                  <stop offset="1" stopColor="#17362c" stopOpacity="0.04" />
-                </radialGradient>
-                <filter
-                  id={`${id}-land-shadow`}
-                  x="-30%"
-                  y="-30%"
-                  width="160%"
-                  height="170%"
-                >
-                  <feDropShadow
-                    dx="0"
-                    dy="22"
-                    stdDeviation="24"
-                    floodColor="#000"
-                    floodOpacity="0.72"
+                  <path
+                    className={styles.atlasAmazonFill}
+                    data-atlas-amazon
+                    d={amazonPath}
+                    fill={`url(#${id}-amazon-glow)`}
                   />
-                </filter>
-                <filter
-                  id={`${id}-marker-glow`}
-                  x="-300%"
-                  y="-300%"
-                  width="700%"
-                  height="700%"
-                >
-                  <feGaussianBlur stdDeviation="8" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <clipPath id={`${id}-continent`}>
+                  <g className={styles.atlasRivers}>
+                    <path d="M292 252C359 276 407 255 468 267C522 278 584 274 652 250" />
+                    <path d="M330 305C391 295 433 312 482 326C528 339 568 333 622 306" />
+                    <path d="M391 186C398 229 423 248 468 267" />
+                    <path d="M511 162C508 203 492 238 468 267" />
+                  </g>
+                </g>
+
+                <g className={styles.atlasBorders}>
                   {countries.map((country) => (
                     <path key={country.name} d={country.path} />
                   ))}
-                </clipPath>
-              </defs>
+                </g>
 
-              <g filter={`url(#${id}-land-shadow)`}>
-                {countries.map((country) => (
-                  <path
-                    key={country.name}
-                    className={styles.atlasCountry}
-                    d={country.path}
-                    fill={`url(#${id}-relief)`}
-                  />
-                ))}
-              </g>
-
-              <g clipPath={`url(#${id}-continent)`}>
-                <rect
-                  className={styles.atlasLandShade}
-                  x="180"
-                  y="55"
-                  width="610"
-                  height="815"
-                  fill={`url(#${id}-shade)`}
+                <path
+                  className={styles.atlasAmazonBase}
+                  d={amazonPath}
+                  aria-hidden="true"
                 />
                 <path
-                  className={styles.atlasAmazonFill}
-                  data-atlas-amazon
+                  className={styles.atlasAmazonRoute}
+                  data-atlas-route
                   d={amazonPath}
-                  fill={`url(#${id}-amazon-glow)`}
+                  aria-hidden="true"
                 />
-                <g className={styles.atlasRivers}>
-                  <path d="M292 252C359 276 407 255 468 267C522 278 584 274 652 250" />
-                  <path d="M330 305C391 295 433 312 482 326C528 339 568 333 622 306" />
-                  <path d="M391 186C398 229 423 248 468 267" />
-                  <path d="M511 162C508 203 492 238 468 267" />
+
+                <g
+                  className={styles.atlasMarker}
+                  data-atlas-marker
+                  filter={`url(#${id}-marker-glow)`}
+                  aria-hidden="true"
+                >
+                  <circle r="19" />
+                  <circle r="7" />
                 </g>
-              </g>
+              </svg>
 
-              <g className={styles.atlasBorders}>
-                {countries.map((country) => (
-                  <path key={country.name} d={country.path} />
-                ))}
-              </g>
-
-              <path
-                className={styles.atlasAmazonBase}
-                d={amazonPath}
-                aria-hidden="true"
-              />
-              <path
-                className={styles.atlasAmazonRoute}
-                data-atlas-route
-                d={amazonPath}
-                aria-hidden="true"
-              />
-
-              <g
-                className={styles.atlasMarker}
-                data-atlas-marker
-                filter={`url(#${id}-marker-glow)`}
-                aria-hidden="true"
-              >
-                <circle r="19" />
-                <circle r="7" />
-              </g>
-            </svg>
-
-            <div className={styles.atlasMapLabel} data-atlas-label>
-              <i aria-hidden="true" />
-              <span>Bioma amazônico</span>
-              <strong>Escala continental</strong>
+              <div className={styles.atlasMapLabel} data-atlas-label>
+                <i aria-hidden="true" />
+                <span>Bioma amazônico</span>
+                <strong>Escala continental</strong>
+              </div>
             </div>
           </div>
 

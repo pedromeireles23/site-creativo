@@ -145,7 +145,7 @@ export function SiteHeader() {
                   onClick={(event) => openMenu(key, event.currentTarget)}
                   key={key}
                 >
-                  {menuGroups[key].label}
+                  {menuGroups[key].navigationLabel ?? menuGroups[key].label}
                 </button>
               ),
             )}
@@ -176,15 +176,23 @@ export function SiteHeader() {
           <div className={styles.desktopRight}>
             <a
               className={styles.navigationItem}
+              data-active={!menuOpen && currentChapter === 'camadas'}
               data-cursor-tone="light"
               href="#camadas"
+              aria-current={
+                currentChapter === 'camadas' ? 'location' : undefined
+              }
             >
               Camadas
             </a>
             <a
               className={styles.navigationItem}
+              data-active={!menuOpen && currentChapter === 'documentario'}
               data-cursor-tone="light"
               href="#documentario"
+              aria-current={
+                currentChapter === 'documentario' ? 'location' : undefined
+              }
             >
               Documentário
             </a>
@@ -193,8 +201,12 @@ export function SiteHeader() {
           <div className={styles.mobileRight}>
             <a
               className={`${styles.navigationItem} ${styles.mobileAccent}`}
+              data-active={!menuOpen && currentChapter === 'folego'}
               data-cursor-tone="light"
               href="#folego"
+              aria-current={
+                currentChapter === 'folego' ? 'location' : undefined
+              }
             >
               Explorar
             </a>
@@ -208,8 +220,8 @@ export function SiteHeader() {
       </header>
 
       <SiteMenu
+        key={activeMenu}
         activeMenu={activeMenu}
-        currentChapter={currentChapter}
         onActiveMenuChange={setActiveMenu}
         onClose={closeMenu}
         open={menuOpen}

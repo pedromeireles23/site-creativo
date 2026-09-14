@@ -1,23 +1,23 @@
 'use client';
 
-import { useEffect, useRef, type MouseEvent } from 'react';
+import Image from 'next/image';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { CustomEase } from 'gsap/CustomEase';
+import { useSmoothScrollControls } from '@/components/smooth-scroll/smooth-scroll';
 import { useMotionProfile } from '@/hooks/use-motion-profile';
 import { gsap, useGSAP } from '@/lib/gsap';
-import { useSmoothScrollControls } from '@/components/smooth-scroll/smooth-scroll';
-import { chapters, menuGroups, type MenuKey } from './site-menu-data';
+import { menuGroups, type MenuEntry, type MenuKey } from './site-menu-data';
 import styles from './site-header.module.scss';
 
 gsap.registerPlugin(CustomEase);
 
-const closedMenuClip = 'inset(0% 100% 0% 0% round 0.25rem)';
-const openMenuClip = 'inset(0% 0% 0% 0% round 0.25rem)';
+const closedMenuClip = 'inset(0% 100% 0% 0% round 0.5rem)';
+const openMenuClip = 'inset(0% 0% 0% 0% round 0.5rem)';
 const menuClipEase = CustomEase.create('menuClip', '0.76,0,0.24,1');
 
 type SiteMenuProps = {
   activeMenu: MenuKey;
-  currentChapter: string;
   onActiveMenuChange: (menu: MenuKey) => void;
   onClose: () => void;
   open: boolean;
@@ -25,14 +25,26 @@ type SiteMenuProps = {
 
 export function SiteMenu({
   activeMenu,
-  currentChapter,
   onActiveMenuChange,
   onClose,
   open,
 }: SiteMenuProps) {
-  const panelRef = useRef<HTMLDivElement>(null);
+  const panelGroupRef = useRef<HTMLDivElement>(null);
+  const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
+  const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
   const motionProfile = useMotionProfile();
   const { navigateToHash, pause, resume } = useSmoothScrollControls();
+  const resolvedMenuKey = activeMenu === 'index' ? 'animals' : activeMenu;
+  const activeGroup = menuGroups[resolvedMenuKey];
+  const activeEntry = activeGroup.entries.find(
+    (entry) => entry.id === activeEntryId,
+  );
+  const activeEntryPosition = activeEntry
+    ? Math.max(
+        0,
+        activeGroup.entries.findIndex((entry) => entry.id === activeEntry.id),
+      )
+    : null;
 
   useEffect(() => {
     if (!open) return;
@@ -43,22 +55,22 @@ export function SiteMenu({
 
   useGSAP(
     () => {
-      const panel = panelRef.current;
-      if (!panel) return;
+      const panelGroup = panelGroupRef.current;
+      if (!panelGroup) return;
 
-      gsap.killTweensOf(panel);
+      gsap.killTweensOf(panelGroup);
       const media = gsap.matchMedia();
 
       media.add('(max-width: 800px)', () => {
-        gsap.set(panel, { xPercent: 0 });
+        gsap.set(panelGroup, { xPercent: 0 });
 
         if (!open) {
-          gsap.set(panel, { clipPath: closedMenuClip });
+          gsap.set(panelGroup, { clipPath: closedMenuClip });
           return;
         }
 
         gsap.fromTo(
-          panel,
+          panelGroup,
           { clipPath: closedMenuClip },
           {
             clipPath: openMenuClip,
@@ -69,16 +81,16 @@ export function SiteMenu({
       });
 
       media.add('(min-width: 801px)', () => {
-        gsap.set(panel, { clearProps: 'clipPath' });
+        gsap.set(panelGroup, { clearProps: 'clipPath' });
 
         if (!open) {
-          gsap.set(panel, { xPercent: -102 });
+          gsap.set(panelGroup, { xPercent: -104 });
           return;
         }
 
         gsap.fromTo(
-          panel,
-          { xPercent: -102 },
+          panelGroup,
+          { xPercent: -104 },
           {
             xPercent: 0,
             duration: motionProfile === 'reduced' ? 0 : 0.72,
@@ -91,16 +103,17 @@ export function SiteMenu({
     },
     {
       dependencies: [motionProfile, open],
-      scope: panelRef,
+      scope: panelGroupRef,
       revertOnUpdate: true,
     },
   );
 
   useGSAP(
     () => {
-      if (!open || !panelRef.current || window.innerWidth <= 800) return;
+      if (!open || !panelGroupRef.current || window.innerWidth <= 800) return;
 
-      const items = panelRef.current.querySelectorAll('[data-menu-item]');
+      const items =
+        panelGroupRef.current.querySelectorAll<HTMLElement>('[data-menu-item]');
       gsap.fromTo(
         items,
         { autoAlpha: 0, y: 12 },
@@ -108,78 +121,42 @@ export function SiteMenu({
           autoAlpha: 1,
           y: 0,
           duration: motionProfile === 'reduced' ? 0 : 0.42,
-          stagger: 0.045,
+          stagger: 0.04,
           ease: 'power2.out',
         },
       );
     },
     {
       dependencies: [activeMenu, motionProfile, open],
-      scope: panelRef,
+      scope: panelGroupRef,
       revertOnUpdate: true,
     },
   );
 
-  const visibleChapters =
-    activeMenu === 'index'
-      ? chapters
-      : chapters.filter((chapter) =>
-          menuGroups[activeMenu].chapters.includes(chapter.id),
-        );
-
-  const menuTitle =
-    activeMenu === 'index' ? 'Capítulos' : menuGroups[activeMenu].label;
-  const menuEyebrow =
-    activeMenu === 'index' ? 'Floresta Viva' : menuGroups[activeMenu].eyebrow;
-  const currentChapterNumber =
-    chapters.find((chapter) => chapter.id === currentChapter)?.number ?? '01';
-  const lastChapterNumber = chapters[chapters.length - 1]?.number ?? '01';
-
   const handleDestinationClick = (
     event: MouseEvent<HTMLAnchorElement>,
-    chapterId: string,
+    destination: string,
   ) => {
     event.preventDefault();
-    onClose();
-    navigateToHash(chapterId);
+    closeMenu();
+    navigateToHash(destination);
   };
 
-  const chapterLinks = (
-    chapterIds = visibleChapters.map(({ id }) => id),
-    navigateImmediately = false,
-  ) =>
-    chapters
-      .filter((chapter) => chapterIds.includes(chapter.id))
-      .map((chapter) => (
-        <li data-menu-item key={chapter.id}>
-          <a
-            href={`#${chapter.id}`}
-            aria-current={
-              currentChapter === chapter.id ? 'location' : undefined
-            }
-            onClick={(event) => {
-              if (navigateImmediately) {
-                handleDestinationClick(event, chapter.id);
-              } else {
-                onClose();
-              }
-            }}
-          >
-            <span>{chapter.number}</span>
-            <span>
-              <strong>{chapter.label}</strong>
-              <small>{chapter.note}</small>
-            </span>
-            <span aria-hidden="true">↘</span>
-          </a>
-        </li>
-      ));
+  const closeMenu = () => {
+    setActiveEntryId(null);
+    setExpandedEntryId(null);
+    onClose();
+  };
+
+  const selectEntry = (entry: MenuEntry) => {
+    setActiveEntryId(entry.id);
+  };
 
   return (
     <Dialog.Root
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) onClose();
+        if (!nextOpen) closeMenu();
       }}
     >
       <Dialog.Portal data-slot="dialog-portal" keepMounted>
@@ -195,134 +172,304 @@ export function SiteMenu({
             data-slot="dialog-title"
             className={`font-heading text-base leading-none font-medium ${styles.srOnly}`}
           >
-            Navegação por capítulos
+            Animais e flora da Amazônia
           </Dialog.Title>
           <Dialog.Description
             data-slot="dialog-description"
             className={`text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground ${styles.srOnly}`}
           >
-            Escolha uma parte da travessia Floresta Viva.
+            Escolha uma presença da floresta para ver sua imagem.
           </Dialog.Description>
 
           <button
             className={styles.scrim}
+            data-cursor-tone="light"
             type="button"
             tabIndex={-1}
             aria-label="Fechar navegação"
-            onClick={onClose}
+            onClick={closeMenu}
           />
 
-          <div className={styles.panel} ref={panelRef}>
-            <div className={styles.desktopMenu}>
-              <div className={styles.panelTop}>
-                <Dialog.Close className={styles.closeButton}>
-                  Fechar <span aria-hidden="true">×</span>
-                </Dialog.Close>
-                <p>
-                  {currentChapterNumber} / {lastChapterNumber}
-                </p>
-              </div>
+          <div className={styles.panelGroup} ref={panelGroupRef}>
+            <div className={styles.panel}>
+              <div className={styles.desktopMenu}>
+                <div className={styles.panelTop}>
+                  <p>
+                    {activeEntryPosition === null
+                      ? '--'
+                      : String(activeEntryPosition + 1).padStart(2, '0')}{' '}
+                    / {String(activeGroup.entries.length).padStart(2, '0')}
+                  </p>
+                </div>
 
-              <div className={styles.panelHeading} data-menu-item>
-                <p>{menuEyebrow}</p>
-                <h2>{menuTitle}</h2>
-              </div>
+                <div className={styles.panelHeading} data-menu-item>
+                  <p>{activeGroup.eyebrow}</p>
+                  <h2>{activeGroup.label}</h2>
+                  <span>{activeGroup.description}</span>
+                </div>
 
-              <ol className={styles.chapterList}>{chapterLinks()}</ol>
+                <ol className={styles.menuEntryList}>
+                  {activeGroup.entries.map((entry) => {
+                    const isSelected = activeEntry?.id === entry.id;
 
-              <div className={styles.panelFooter} data-menu-item>
-                {activeMenu !== 'index' && (
-                  <button
-                    type="button"
-                    onClick={() => onActiveMenuChange('index')}
-                  >
-                    Todos os capítulos
-                  </button>
-                )}
-                <a href="#documentario" onClick={onClose}>
-                  Ir ao documentário
-                </a>
-              </div>
-            </div>
+                    return (
+                      <li data-menu-item key={entry.id}>
+                        <button
+                          type="button"
+                          data-cursor-tone="gold"
+                          aria-pressed={isSelected}
+                          data-selected={isSelected}
+                          onClick={() => selectEntry(entry)}
+                          onFocus={() => selectEntry(entry)}
+                          onPointerEnter={() => selectEntry(entry)}
+                        >
+                          <span>{entry.number}</span>
+                          <span>
+                            <strong>{entry.label}</strong>
+                            <small>{entry.scientificName ?? entry.note}</small>
+                          </span>
+                          <span aria-hidden="true">↘</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
 
-            <div className={styles.mobileMenu}>
-              <div className={styles.mobileMenuTop}>
-                <Dialog.Close className={styles.mobileCloseButton}>
-                  Fechar <span aria-hidden="true">×</span>
-                </Dialog.Close>
-                <p>
-                  {currentChapterNumber} / {lastChapterNumber}
-                </p>
-              </div>
-
-              <div className={styles.mobileMenuTitleBar}>
-                {activeMenu === 'index' ? (
+                <div className={styles.panelFooter} data-menu-item>
                   <a
-                    href="#despertar"
+                    data-cursor-tone="gold"
+                    href="#camadas"
                     onClick={(event) =>
-                      handleDestinationClick(event, 'despertar')
+                      handleDestinationClick(event, 'camadas')
                     }
                   >
-                    Início
+                    Explorar as camadas
                   </a>
-                ) : (
-                  <div>
-                    <span>{menuTitle}</span>
-                    <button
-                      type="button"
-                      aria-label="Voltar aos grupos"
-                      onClick={() => onActiveMenuChange('index')}
+                  <a
+                    data-cursor-tone="light"
+                    href="#documentario"
+                    onClick={(event) =>
+                      handleDestinationClick(event, 'documentario')
+                    }
+                  >
+                    Ver documentário
+                  </a>
+                </div>
+              </div>
+
+              <div className={styles.mobileMenu}>
+                <div className={styles.mobileMenuTop}>
+                  <p>Floresta viva</p>
+                </div>
+
+                <div className={styles.mobileMenuTitleBar}>
+                  {activeMenu === 'index' ? (
+                    <a
+                      data-cursor-tone="gold"
+                      href="#despertar"
+                      onClick={(event) =>
+                        handleDestinationClick(event, 'despertar')
+                      }
                     >
-                      <span aria-hidden="true">×</span>
-                    </button>
+                      Início
+                    </a>
+                  ) : (
+                    <div>
+                      <span>{activeGroup.label}</span>
+                      <button
+                        type="button"
+                        data-cursor-tone="gold"
+                        aria-label="Voltar às categorias"
+                        onClick={() => {
+                          setActiveEntryId(null);
+                          setExpandedEntryId(null);
+                          onActiveMenuChange('index');
+                        }}
+                      >
+                        <span aria-hidden="true">×</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {activeMenu === 'index' ? (
+                  <nav
+                    className={styles.mobileMenuNav}
+                    aria-label="Animais e flora"
+                  >
+                    {(
+                      Object.keys(menuGroups) as Array<
+                        Exclude<MenuKey, 'index'>
+                      >
+                    ).map((key) => (
+                      <button
+                        type="button"
+                        data-cursor-tone="gold"
+                        onClick={() => {
+                          setActiveEntryId(null);
+                          setExpandedEntryId(null);
+                          onActiveMenuChange(key);
+                        }}
+                        key={key}
+                      >
+                        <span>
+                          <strong>{menuGroups[key].label}</strong>
+                          <small>
+                            {menuGroups[key].entries.length} encontros
+                          </small>
+                        </span>
+                        <span aria-hidden="true">✦</span>
+                      </button>
+                    ))}
+                  </nav>
+                ) : (
+                  <div className={styles.mobileMenuContent} data-lenis-prevent>
+                    <p className={styles.mobileMenuEyebrow}>
+                      {activeGroup.eyebrow}
+                    </p>
+                    <ol className={styles.mobileEntryList}>
+                      {activeGroup.entries.map((entry) => {
+                        const isExpanded = expandedEntryId === entry.id;
+                        const dropdownId = `mobile-entry-${entry.id}`;
+
+                        return (
+                          <li key={entry.id}>
+                            <button
+                              type="button"
+                              data-cursor-tone="gold"
+                              aria-expanded={isExpanded}
+                              aria-controls={dropdownId}
+                              onClick={() => {
+                                selectEntry(entry);
+                                setExpandedEntryId(
+                                  isExpanded ? null : entry.id,
+                                );
+                              }}
+                            >
+                              <span>{entry.number}</span>
+                              <span>
+                                <strong>{entry.label}</strong>
+                                <small>
+                                  {entry.scientificName ?? entry.note}
+                                </small>
+                              </span>
+                              <span aria-hidden="true">
+                                {isExpanded ? '−' : '+'}
+                              </span>
+                            </button>
+
+                            {isExpanded && (
+                              <div
+                                className={styles.mobileEntryDropdown}
+                                id={dropdownId}
+                              >
+                                <figure>
+                                  <div className={styles.mobileEntryImage}>
+                                    <Image
+                                      src={entry.image}
+                                      alt={entry.imageAlt}
+                                      fill
+                                      sizes="calc(100vw - 2.5rem)"
+                                      style={{
+                                        objectPosition:
+                                          entry.imagePosition ?? 'center',
+                                      }}
+                                    />
+                                    <span aria-hidden="true" />
+                                  </div>
+                                  <figcaption>
+                                    <span>{entry.note}</span>
+                                    {!entry.hideDestinationLink && (
+                                      <a
+                                        data-cursor-tone="light"
+                                        href={`#${entry.destination}`}
+                                        onClick={(event) =>
+                                          handleDestinationClick(
+                                            event,
+                                            entry.destination,
+                                          )
+                                        }
+                                      >
+                                        Explorar{' '}
+                                        <span aria-hidden="true">↘</span>
+                                      </a>
+                                    )}
+                                  </figcaption>
+                                </figure>
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ol>
                   </div>
                 )}
-              </div>
 
-              {activeMenu === 'index' ? (
-                <nav
-                  className={styles.mobileMenuNav}
-                  aria-label="Grupos de capítulos"
-                >
-                  {(
-                    Object.keys(menuGroups) as Array<Exclude<MenuKey, 'index'>>
-                  ).map((key) => (
-                    <button
-                      type="button"
-                      onClick={() => onActiveMenuChange(key)}
-                      key={key}
-                    >
-                      <span>{menuGroups[key].label}</span>
-                      <span aria-hidden="true">✦</span>
-                    </button>
-                  ))}
-                </nav>
-              ) : (
-                <div className={styles.mobileMenuContent} data-lenis-prevent>
-                  <p className={styles.mobileMenuEyebrow}>{menuEyebrow}</p>
-                  <ol className={styles.chapterList}>
-                    {chapterLinks(menuGroups[activeMenu].chapters, true)}
-                  </ol>
+                <div className={styles.mobileMenuFooter}>
+                  <a
+                    data-cursor-tone="gold"
+                    href="#camadas"
+                    onClick={(event) =>
+                      handleDestinationClick(event, 'camadas')
+                    }
+                  >
+                    Ir às camadas
+                  </a>
+                  <a
+                    data-cursor-tone="light"
+                    href="#documentario"
+                    onClick={(event) =>
+                      handleDestinationClick(event, 'documentario')
+                    }
+                  >
+                    Ver documentário
+                  </a>
                 </div>
-              )}
-
-              <div className={styles.mobileMenuFooter}>
-                <a
-                  href="#camadas"
-                  onClick={(event) => handleDestinationClick(event, 'camadas')}
-                >
-                  Ir às camadas
-                </a>
-                <a
-                  href="#documentario"
-                  onClick={(event) =>
-                    handleDestinationClick(event, 'documentario')
-                  }
-                >
-                  Ir ao documentário
-                </a>
               </div>
             </div>
+
+            {activeEntry && (
+              <aside
+                className={styles.desktopPreview}
+                id="menu-desktop-preview"
+                aria-live="polite"
+                data-with-link={!activeEntry.hideDestinationLink}
+                data-menu-item
+              >
+                <Image
+                  className={styles.desktopPreviewImage}
+                  key={activeEntry.image}
+                  src={activeEntry.image}
+                  alt={activeEntry.imageAlt}
+                  fill
+                  sizes="(max-width: 1100px) 46vw, 34vw"
+                  style={{
+                    objectPosition: activeEntry.imagePosition ?? 'center',
+                  }}
+                />
+                <span
+                  className={styles.desktopPreviewShade}
+                  aria-hidden="true"
+                />
+                <div className={styles.desktopPreviewCopy}>
+                  <p>{activeGroup.eyebrow}</p>
+                  <h3>{activeEntry.label}</h3>
+                  <span>{activeEntry.scientificName ?? activeEntry.note}</span>
+                </div>
+                {!activeEntry.hideDestinationLink && (
+                  <a
+                    className={styles.desktopPreviewLink}
+                    data-cursor-tone="light"
+                    href={`#${activeEntry.destination}`}
+                    onClick={(event) =>
+                      handleDestinationClick(event, activeEntry.destination)
+                    }
+                  >
+                    Explorar no site <span aria-hidden="true">↘</span>
+                  </a>
+                )}
+              </aside>
+            )}
           </div>
         </Dialog.Popup>
       </Dialog.Portal>
