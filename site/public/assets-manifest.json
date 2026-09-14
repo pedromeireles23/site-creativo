@@ -1,6 +1,15 @@
 {
   "assets": [
     {
+      "path": "/images/documentary/amazon-river-dawn.png",
+      "scene": "Documentário",
+      "role": "Paisagem cinematográfica da chamada final para o documentário",
+      "origin": "OpenAI built-in image generation",
+      "createdAt": "2026-09-13",
+      "licenseReview": "Projeto autoral; revisar termos aplicáveis antes da publicação final",
+      "prompt": "Fotografia aérea cinematográfica e original da floresta amazônica ao amanhecer, com um grande rio sinuoso, copa densa, neblina baixa, luz dourada controlada e espaço visual calmo no centro para uma chamada; sem pessoas, animais, construções, texto, marcas ou aparência de CGI. A imagem de referência foi usada somente para composição e atmosfera."
+    },
+    {
       "path": "/images/hero-amazon-dawn.png",
       "scene": "Despertar",
       "role": "Hero cinematográfico",

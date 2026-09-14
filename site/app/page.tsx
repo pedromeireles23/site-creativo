@@ -1,15 +1,19 @@
 import Image from 'next/image';
 import { HeroExperience } from '@/components/hero-experience/hero-experience';
 import { CustomCursor } from '@/components/custom-cursor/custom-cursor';
+import { DocumentarySection } from '@/components/documentary-section/documentary-section';
 import { FaunaSection } from '@/components/fauna-section/fauna-section';
 import { EpilogueSection } from '@/components/epilogue-section/epilogue-section';
 import { JaguarSection } from '@/components/jaguar-section/jaguar-section';
 import { MacawSection } from '@/components/macaw-section/macaw-section';
 import { SiteHeader } from '@/components/site-header/site-header';
+import { SiteFooter } from '@/components/site-footer/site-footer';
 import { MapTrailSection } from '@/components/map-trail-section/map-trail-section';
 import { TerritoriesSection } from '@/components/territories-section/territories-section';
 import { VeinsSection } from '@/components/veins-section/veins-section';
 import styles from './page.module.scss';
+
+const showArchivedEnding = false;
 
 export default function Home() {
   return (
@@ -57,9 +61,16 @@ export default function Home() {
           </MapTrailSection>
         </div>
 
-        <MacawSection />
+        <DocumentarySection />
 
-        <EpilogueSection />
+        {showArchivedEnding && (
+          <>
+            <MacawSection />
+            <EpilogueSection />
+          </>
+        )}
+
+        <SiteFooter />
       </main>
     </>
   );

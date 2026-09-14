@@ -175,8 +175,8 @@ export function SiteHeader() {
             <a className={styles.navigationItem} href="#camadas">
               Camadas
             </a>
-            <a className={styles.navigationItem} href="#silencio">
-              Silêncio
+            <a className={styles.navigationItem} href="#documentario">
+              Documentário
             </a>
           </div>
 

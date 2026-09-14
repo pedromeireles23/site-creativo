@@ -24,13 +24,11 @@ export const chapters: Chapter[] = [
     note: 'A floresta não é uma só',
   },
   { id: 'olhos', number: '06', label: 'Olhos', note: 'A presença da onça' },
-  { id: 'asas', number: '07', label: 'Asas', note: 'O céu ganha cor' },
-  { id: 'inteiro', number: '08', label: 'Inteiro', note: 'Tudo pulsa junto' },
   {
-    id: 'silencio',
-    number: '09',
-    label: 'Silêncio',
-    note: 'O fim da travessia',
+    id: 'documentario',
+    number: '07',
+    label: 'Documentário',
+    note: 'Assista à travessia',
   },
 ];
 
@@ -46,11 +44,11 @@ export const menuGroups: Record<
   vida: {
     label: 'Vida',
     eyebrow: 'Presenças',
-    chapters: ['olhos', 'asas'],
+    chapters: ['olhos'],
   },
   travessia: {
     label: 'Travessia',
     eyebrow: 'Um só corpo',
-    chapters: ['inteiro', 'silencio'],
+    chapters: ['documentario'],
   },
 };

@@ -133,6 +133,7 @@ export function SiteMenu({
     activeMenu === 'index' ? 'Floresta Viva' : menuGroups[activeMenu].eyebrow;
   const currentChapterNumber =
     chapters.find((chapter) => chapter.id === currentChapter)?.number ?? '01';
+  const lastChapterNumber = chapters[chapters.length - 1]?.number ?? '01';
 
   const handleDestinationClick = (
     event: MouseEvent<HTMLAnchorElement>,
@@ -217,7 +218,9 @@ export function SiteMenu({
                 <Dialog.Close className={styles.closeButton}>
                   Fechar <span aria-hidden="true">×</span>
                 </Dialog.Close>
-                <p>{currentChapterNumber} / 09</p>
+                <p>
+                  {currentChapterNumber} / {lastChapterNumber}
+                </p>
               </div>
 
               <div className={styles.panelHeading} data-menu-item>
@@ -236,8 +239,8 @@ export function SiteMenu({
                     Todos os capítulos
                   </button>
                 )}
-                <a href="#silencio" onClick={onClose}>
-                  Ir ao silêncio
+                <a href="#documentario" onClick={onClose}>
+                  Ir ao documentário
                 </a>
               </div>
             </div>
@@ -247,7 +250,9 @@ export function SiteMenu({
                 <Dialog.Close className={styles.mobileCloseButton}>
                   Fechar <span aria-hidden="true">×</span>
                 </Dialog.Close>
-                <p>{currentChapterNumber} / 09</p>
+                <p>
+                  {currentChapterNumber} / {lastChapterNumber}
+                </p>
               </div>
 
               <div className={styles.mobileMenuTitleBar}>
@@ -309,10 +314,12 @@ export function SiteMenu({
                   Ir às camadas
                 </a>
                 <a
-                  href="#silencio"
-                  onClick={(event) => handleDestinationClick(event, 'silencio')}
+                  href="#documentario"
+                  onClick={(event) =>
+                    handleDestinationClick(event, 'documentario')
+                  }
                 >
-                  Ir ao silêncio
+                  Ir ao documentário
                 </a>
               </div>
             </div>
