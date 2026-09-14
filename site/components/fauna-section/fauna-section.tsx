@@ -80,9 +80,34 @@ export function FaunaSection() {
         '[data-fauna-card]',
         section,
       );
+      const heading = section.querySelector<HTMLElement>(
+        '[data-layers-heading]',
+      );
+      const scribblePaths = section.querySelectorAll<SVGPathElement>(
+        '[data-layers-scribble-path]',
+      );
       if (!cards.length) return;
 
       const media = gsap.matchMedia();
+      const scribbleReveal =
+        heading && scribblePaths.length
+          ? gsap.fromTo(
+              scribblePaths,
+              { strokeDashoffset: 1400 },
+              {
+                strokeDashoffset: 0,
+                stagger: 0.1,
+                ease: 'none',
+                scrollTrigger: {
+                  trigger: heading,
+                  start: 'top 84%',
+                  end: 'top 44%',
+                  scrub: 0.35,
+                  invalidateOnRefresh: true,
+                },
+              },
+            )
+          : null;
 
       media.add(MOTION_QUERIES.compact, () => {
         const animations = cards.flatMap((card, index) => {
@@ -132,7 +157,10 @@ export function FaunaSection() {
       });
 
       scheduleScrollRefresh();
-      return () => media.revert();
+      return () => {
+        scribbleReveal?.kill();
+        media.revert();
+      };
     },
     {
       scope: sectionRef,
@@ -173,13 +201,34 @@ export function FaunaSection() {
       data-header-theme="light"
     >
       <div className={styles.faunaStage} data-fauna-stage>
-        <header className={styles.layersHeading}>
+        <header className={styles.layersHeading} data-layers-heading>
           <p className={styles.chapterLabel}>
             <span>04</span>
             <span aria-hidden="true" className={styles.chapterLine} />
             Camadas
           </p>
-          <h2 id="camadas-title">Nada vive sozinho.</h2>
+          <div className={styles.layersTitle}>
+            <svg
+              className={styles.layersScribble}
+              viewBox="0 0 520 220"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                data-layers-scribble-path
+                d="M18 105C58 61 359 45 480 94C566 129 428 177 249 166C91 157 17 129 49 96C93 51 355 65 499 132"
+              />
+              <path
+                data-layers-scribble-path
+                d="M35 78C150 61 361 85 506 154"
+              />
+              <path
+                data-layers-scribble-path
+                d="M61 61C183 49 365 99 487 183"
+              />
+            </svg>
+            <h2 id="camadas-title">Nada vive sozinho.</h2>
+          </div>
         </header>
 
         <fieldset

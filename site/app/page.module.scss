@@ -1484,6 +1484,43 @@
   }
 }
 
+.layersTitle {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  width: fit-content;
+  flex: 0 1 auto;
+  isolation: isolate;
+
+  h2 {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.layersScribble {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: 128%;
+  height: 132%;
+  overflow: visible;
+  fill: none;
+  stroke: rgb(20 32 27 / 28%);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1;
+  pointer-events: none;
+  transform: translate(-50%, -49%);
+
+  path {
+    stroke-dasharray: 1400;
+    stroke-dashoffset: 1400;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
 .faunaPanels {
   position: relative;
   z-index: 61;
@@ -3587,6 +3624,11 @@
     }
   }
 
+  .layersScribble {
+    width: 132%;
+    height: 128%;
+  }
+
   .faunaPanels {
     display: grid;
     min-height: auto;
@@ -4774,6 +4816,10 @@
   }
 
   .breathKicker path {
+    stroke-dashoffset: 0;
+  }
+
+  .layersScribble path {
     stroke-dashoffset: 0;
   }
 
