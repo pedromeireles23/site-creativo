@@ -138,6 +138,7 @@ export function SiteHeader() {
                 <button
                   className={styles.navigationItem}
                   data-active={menuOpen && activeMenu === key}
+                  data-cursor-tone="light"
                   type="button"
                   aria-haspopup="dialog"
                   aria-expanded={menuOpen && activeMenu === key}
@@ -153,6 +154,7 @@ export function SiteHeader() {
           <div className={styles.mobileLeft}>
             <button
               className={styles.navigationItem}
+              data-cursor-tone="light"
               type="button"
               aria-haspopup="dialog"
               aria-expanded={menuOpen}
@@ -172,10 +174,18 @@ export function SiteHeader() {
           </a>
 
           <div className={styles.desktopRight}>
-            <a className={styles.navigationItem} href="#camadas">
+            <a
+              className={styles.navigationItem}
+              data-cursor-tone="light"
+              href="#camadas"
+            >
               Camadas
             </a>
-            <a className={styles.navigationItem} href="#documentario">
+            <a
+              className={styles.navigationItem}
+              data-cursor-tone="light"
+              href="#documentario"
+            >
               Documentário
             </a>
           </div>
@@ -183,6 +193,7 @@ export function SiteHeader() {
           <div className={styles.mobileRight}>
             <a
               className={`${styles.navigationItem} ${styles.mobileAccent}`}
+              data-cursor-tone="light"
               href="#folego"
             >
               Explorar

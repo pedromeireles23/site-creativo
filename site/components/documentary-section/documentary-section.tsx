@@ -176,6 +176,7 @@ export function DocumentarySection() {
             className={styles.documentaryAction}
             data-documentary-action
             data-cursor-label="Assistir"
+            data-cursor-tone="light"
             href={documentaryUrl}
             target="_blank"
             rel="noreferrer"

@@ -5,7 +5,8 @@ import { useMotionProfile } from '@/hooks/use-motion-profile';
 import { gsap } from '@/lib/gsap';
 import styles from './custom-cursor.module.scss';
 
-type CursorMode = 'default' | 'hidden' | 'label';
+type CursorMode = 'default' | 'hidden' | 'label' | 'accent';
+type CursorTone = 'gold' | 'light';
 
 const INTERACTIVE_SELECTOR =
   'a, button, input, select, textarea, summary, [role="button"], [contenteditable="true"]';
@@ -43,6 +44,7 @@ export function CustomCursor() {
     let hasPosition = false;
     let currentMode: CursorMode | undefined;
     let currentLabel = '';
+    let currentTone: CursorTone | undefined;
 
     gsap.set(cursor, {
       autoAlpha: 0,
@@ -64,13 +66,26 @@ export function CustomCursor() {
       ease: 'power3.out',
     });
 
-    const setMode = (mode: CursorMode, nextLabel = '') => {
-      if (mode === currentMode && nextLabel === currentLabel) return;
+    const setMode = (
+      mode: CursorMode,
+      nextLabel = '',
+      nextTone: CursorTone = 'gold',
+    ) => {
+      if (
+        mode === currentMode &&
+        nextLabel === currentLabel &&
+        nextTone === currentTone
+      ) {
+        return;
+      }
 
       currentMode = mode;
       currentLabel = nextLabel;
+      currentTone = nextTone;
+      cursor.dataset.tone = nextTone;
 
       const showsLabel = mode === 'label';
+      const showsAccent = showsLabel || mode === 'accent';
       const hidesCursor = mode === 'hidden';
 
       if (showsLabel) labelText.textContent = nextLabel;
@@ -83,21 +98,21 @@ export function CustomCursor() {
         overwrite: 'auto',
       });
       gsap.to(dot, {
-        rotation: showsLabel ? 45 : 0,
+        rotation: showsAccent ? 45 : 0,
         duration: 0.28,
         ease: 'power3.out',
         overwrite: 'auto',
       });
       gsap.to(verticalLine, {
-        autoAlpha: showsLabel ? 1 : 0,
-        height: showsLabel ? 12 : 0,
+        autoAlpha: showsAccent ? 1 : 0,
+        height: showsAccent ? 12 : 0,
         duration: 0.28,
         ease: 'power3.out',
         overwrite: 'auto',
       });
       gsap.to(horizontalLine, {
-        autoAlpha: showsLabel ? 1 : 0,
-        width: showsLabel ? 12 : 0,
+        autoAlpha: showsAccent ? 1 : 0,
+        width: showsAccent ? 12 : 0,
         duration: 0.28,
         ease: 'power3.out',
         overwrite: 'auto',
@@ -126,10 +141,15 @@ export function CustomCursor() {
       const labelledTarget = target?.closest<HTMLElement>(
         '[data-cursor-label]',
       );
+      const tonedTarget = target?.closest<HTMLElement>('[data-cursor-tone]');
       const cursorLabel = labelledTarget?.dataset.cursorLabel?.trim();
+      const cursorTone: CursorTone =
+        tonedTarget?.dataset.cursorTone === 'light' ? 'light' : 'gold';
 
       if (cursorLabel) {
-        setMode('label', cursorLabel);
+        setMode('label', cursorLabel, cursorTone);
+      } else if (tonedTarget) {
+        setMode('accent', '', cursorTone);
       } else if (target?.closest(INTERACTIVE_SELECTOR)) {
         setMode('hidden');
       } else {

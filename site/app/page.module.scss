@@ -3143,6 +3143,7 @@
   align-items: center;
   justify-content: center;
   border: 1px solid rgb(243 240 231 / 62%);
+  border-radius: 0;
   background: rgb(243 240 231 / 3%);
   color: inherit;
   font-family: var(--font-interface);
@@ -3153,21 +3154,23 @@
   letter-spacing: 0.18em;
   backdrop-filter: blur(4px);
   transition:
-    color 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease;
+    background-color 300ms cubic-bezier(0.5, 1, 0.89, 1),
+    color 300ms cubic-bezier(0.5, 1, 0.89, 1),
+    border-color 300ms cubic-bezier(0.5, 1, 0.89, 1),
+    border-radius 300ms cubic-bezier(0.5, 1, 0.89, 1);
   will-change: opacity, transform;
 
   &:focus-visible {
-    outline: 2px solid var(--mist-100);
-    outline-offset: 4px;
+    outline: 2px solid var(--macaw-gold);
+    outline-offset: 2px;
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .documentaryAction:hover {
-    border-color: var(--ivory-50);
-    background: var(--ivory-50);
+    border-color: var(--macaw-gold);
+    border-radius: 0.4rem;
+    background: var(--macaw-gold);
     color: var(--forest-950);
   }
 }
