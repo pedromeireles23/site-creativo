@@ -112,13 +112,26 @@ export function TerritoriesSection() {
 
       const media = gsap.matchMedia();
 
-      media.add(MOTION_QUERIES.cinematic, () => {
-        const compact = window.matchMedia(MOTION_QUERIES.compact).matches;
+      const buildCinematicTimeline = (compact: boolean) => {
         const viewportHeight = window.innerHeight;
-        const horizontalDistance = Math.max(
-          0,
-          track.scrollWidth - window.innerWidth,
-        );
+        const getHorizontalDistance = () =>
+          Math.max(0, track.scrollWidth - window.innerWidth);
+        const horizontalDistance = getHorizontalDistance();
+        const getScrollDistance = () => {
+          const currentViewportHeight = window.innerHeight;
+          const currentIntroDistance =
+            (compact ? 1.15 : 1.5) * currentViewportHeight;
+          const currentRevealDistance =
+            (compact ? 0.85 : 1) * currentViewportHeight;
+          const currentHorizontalDuration =
+            (compact ? 1.35 : 1.5) * getHorizontalDistance();
+
+          return (
+            currentIntroDistance +
+            currentRevealDistance +
+            currentHorizontalDuration
+          );
+        };
         const introDistance = (compact ? 1.15 : 1.5) * viewportHeight;
         const revealDistance = (compact ? 0.85 : 1) * viewportHeight;
         const horizontalDuration = (compact ? 1.35 : 1.5) * horizontalDistance;
@@ -139,8 +152,7 @@ export function TerritoriesSection() {
           scrollTrigger: {
             trigger: section,
             start: 'top top',
-            end: () =>
-              `+=${introDistance + revealDistance + horizontalDuration}`,
+            end: () => `+=${getScrollDistance()}`,
             pin: stage,
             scrub: true,
             invalidateOnRefresh: true,
@@ -186,7 +198,7 @@ export function TerritoriesSection() {
           )
           .to(
             track,
-            { x: -horizontalDistance, duration: horizontalDuration },
+            { x: () => -getHorizontalDistance(), duration: horizontalDuration },
             'horizontalScroll',
           )
           .to(
@@ -281,7 +293,12 @@ export function TerritoriesSection() {
           nextFogReveal?.kill();
           timeline.kill();
         };
-      });
+      };
+
+      media.add(MOTION_QUERIES.wide, () => buildCinematicTimeline(false));
+      media.add(MOTION_QUERIES.compactCinematic, () =>
+        buildCinematicTimeline(true),
+      );
 
       media.add(MOTION_QUERIES.shortLandscape, () => {
         gsap.set(cards, { autoAlpha: 1, y: 0 });

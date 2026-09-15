@@ -11,7 +11,12 @@ import {
   type ReactNode,
 } from 'react';
 import { useMotionCapabilities } from '@/hooks/use-motion-profile';
-import { gsap, scheduleScrollRefresh, ScrollTrigger } from '@/lib/gsap';
+import {
+  gsap,
+  scheduleScrollRefresh,
+  ScrollTrigger,
+  waitForScrollRefresh,
+} from '@/lib/gsap';
 
 type SmoothScrollController = {
   resize: () => void;
@@ -80,6 +85,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
   const { preference: motionPreference } = useMotionCapabilities();
   const controllerRef = useRef<SmoothScrollController | null>(null);
   const pauseRequestedRef = useRef(false);
+  const hashNavigationIdRef = useRef(0);
 
   const pause = useCallback(() => {
     pauseRequestedRef.current = true;
@@ -94,6 +100,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
   const navigateToHash = useCallback((hash: string) => {
     const normalizedHash = decodeURIComponent(hash.replace(/^#/, ''));
     if (!normalizedHash) return;
+    const navigationId = ++hashNavigationIdRef.current;
 
     const encodedHash = `#${encodeURIComponent(normalizedHash)}`;
     if (window.location.hash === encodedHash) {
@@ -106,24 +113,38 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       const controller = controllerRef.current;
 
       if (!controller) {
-        const target = resolveHashScrollTarget(normalizedHash);
-        if (typeof target === 'number') {
-          window.scrollTo({ top: target, behavior: 'instant' });
-        } else {
-          target?.scrollIntoView({ block: 'start', behavior: 'instant' });
-        }
-        ScrollTrigger.update();
+        void waitForScrollRefresh().then(() => {
+          if (navigationId !== hashNavigationIdRef.current) return;
+
+          const target = resolveHashScrollTarget(normalizedHash);
+          if (typeof target === 'number') {
+            window.scrollTo({ top: target, behavior: 'instant' });
+          } else {
+            target?.scrollIntoView({ block: 'start', behavior: 'instant' });
+          }
+          ScrollTrigger.update();
+        });
         return;
       }
 
       controller.resize();
-      scheduleScrollRefresh();
-      window.requestAnimationFrame(() => {
-        const target = resolveHashScrollTarget(normalizedHash);
-        if (target === null) return;
+      void waitForScrollRefresh().then(() => {
+        if (
+          navigationId !== hashNavigationIdRef.current ||
+          controllerRef.current !== controller
+        ) {
+          return;
+        }
 
-        controller.scrollTo(target, { force: true, immediate: true });
-        ScrollTrigger.update();
+        window.requestAnimationFrame(() => {
+          if (navigationId !== hashNavigationIdRef.current) return;
+
+          const target = resolveHashScrollTarget(normalizedHash);
+          if (target === null) return;
+
+          controller.scrollTo(target, { force: true, immediate: true });
+          ScrollTrigger.update();
+        });
       });
     });
   }, []);
@@ -138,24 +159,32 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
     const setupNativeScrolling = () => {
       let hashFrame: number | undefined;
+      let hashRequestId = 0;
 
       const scrollToHash = () => {
+        const requestId = hashRequestId;
+        hashFrame = undefined;
         const hash = decodeURIComponent(window.location.hash.slice(1));
         if (!hash) return;
 
-        const target = resolveHashScrollTarget(hash);
-        if (typeof target === 'number') {
-          window.scrollTo({ top: target, behavior: 'instant' });
-        } else {
-          target?.scrollIntoView({
-            block: 'start',
-            behavior: 'instant',
-          });
-        }
-        ScrollTrigger.update();
+        void waitForScrollRefresh().then(() => {
+          if (disposed || requestId !== hashRequestId) return;
+
+          const target = resolveHashScrollTarget(hash);
+          if (typeof target === 'number') {
+            window.scrollTo({ top: target, behavior: 'instant' });
+          } else {
+            target?.scrollIntoView({
+              block: 'start',
+              behavior: 'instant',
+            });
+          }
+          ScrollTrigger.update();
+        });
       };
 
       const scheduleHashScroll = () => {
+        hashRequestId += 1;
         if (hashFrame !== undefined) {
           window.cancelAnimationFrame(hashFrame);
         }
@@ -169,6 +198,10 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       }, 180);
       const settleTimeout = window.setTimeout(scheduleHashScroll, 720);
 
+      void document.fonts.ready.then(() => {
+        if (!disposed) scheduleHashScroll();
+      });
+
       window.addEventListener('hashchange', scheduleHashScroll);
       window.addEventListener('popstate', scheduleHashScroll);
       const handlePageShow = (event: PageTransitionEvent) => {
@@ -181,6 +214,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       });
 
       return () => {
+        hashRequestId += 1;
         window.removeEventListener('hashchange', scheduleHashScroll);
         window.removeEventListener('popstate', scheduleHashScroll);
         window.removeEventListener('pageshow', handlePageShow);
@@ -229,26 +263,34 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
         let refreshTimeout: number | undefined;
         let hashFrame: number | undefined;
+        let hashRequestId = 0;
         let tickerActive = false;
 
         const scrollToHash = () => {
+          const requestId = hashRequestId;
           hashFrame = undefined;
           const hash = decodeURIComponent(window.location.hash.slice(1));
           if (!hash) return;
 
           lenis.resize();
-          scheduleScrollRefresh();
-          hashFrame = window.requestAnimationFrame(() => {
-            hashFrame = undefined;
-            const target = resolveHashScrollTarget(hash);
-            if (target === null) return;
+          void waitForScrollRefresh().then(() => {
+            if (disposed || requestId !== hashRequestId) return;
 
-            lenis.scrollTo(target, { force: true, immediate: true });
-            ScrollTrigger.update();
+            hashFrame = window.requestAnimationFrame(() => {
+              hashFrame = undefined;
+              if (disposed || requestId !== hashRequestId) return;
+
+              const target = resolveHashScrollTarget(hash);
+              if (target === null) return;
+
+              lenis.scrollTo(target, { force: true, immediate: true });
+              ScrollTrigger.update();
+            });
           });
         };
 
         const scheduleHashScroll = () => {
+          hashRequestId += 1;
           if (hashFrame !== undefined) {
             window.cancelAnimationFrame(hashFrame);
           }
@@ -304,7 +346,10 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         const settledHashTimeout = window.setTimeout(scheduleHashScroll, 720);
 
         void document.fonts.ready.then(() => {
-          if (!disposed) scheduleRefresh();
+          if (!disposed) {
+            scheduleRefresh();
+            scheduleHashScroll();
+          }
         });
 
         queueMicrotask(() => {
@@ -312,6 +357,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         });
 
         cleanup = () => {
+          hashRequestId += 1;
           document.removeEventListener(
             'visibilitychange',
             handleVisibilityChange,

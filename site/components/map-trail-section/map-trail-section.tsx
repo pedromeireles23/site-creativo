@@ -67,6 +67,10 @@ const amazonPath =
   'M286 196C339 157 425 150 511 162C600 174 674 211 686 260C665 306 617 358 561 392C490 434 400 423 339 380C294 348 265 273 286 196Z';
 
 const documentaryUrl = 'https://www.youtube.com/watch?v=SSdwbEcAsWc&t=12s';
+const tabletCinematicQuery =
+  '(min-width: 768px) and (max-width: 1023px) and (min-height: 701px), (min-width: 768px) and (max-width: 1023px) and (orientation: portrait)';
+const phoneCinematicQuery =
+  '(max-width: 767px) and (min-height: 701px), (max-width: 767px) and (orientation: portrait)';
 
 export function MapTrailSection({ children }: { children: ReactNode }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -397,14 +401,8 @@ export function MapTrailSection({ children }: { children: ReactNode }) {
       };
 
       media.add(MOTION_QUERIES.wide, () => createJourney(false));
-      media.add(MOTION_QUERIES.compactCinematic, () => {
-        if (window.matchMedia('(max-width: 767px)').matches) return;
-        return createJourney(true);
-      });
-      media.add(
-        '(max-width: 767px) and (min-height: 701px), (max-width: 767px) and (orientation: portrait)',
-        createPhoneJourney,
-      );
+      media.add(tabletCinematicQuery, () => createJourney(true));
+      media.add(phoneCinematicQuery, createPhoneJourney);
 
       media.add(MOTION_QUERIES.shortLandscape, () => {
         markerPosition.progress = 0.74;

@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useRef } from "react";
-import styles from "@/app/page.module.scss";
-import { useSmoothScrollReady } from "@/components/smooth-scroll/smooth-scroll";
-import { useMotionProfile } from "@/hooks/use-motion-profile";
-import { gsap, scheduleScrollRefresh, useGSAP } from "@/lib/gsap";
+import Image from 'next/image';
+import { useRef } from 'react';
+import styles from '@/app/page.module.scss';
+import { useSmoothScrollReady } from '@/components/smooth-scroll/smooth-scroll';
+import { useMotionProfile } from '@/hooks/use-motion-profile';
+import { gsap, scheduleScrollRefresh, useGSAP } from '@/lib/gsap';
 
-const backgroundImage = "/images/documentary/amazon-river-dawn.png";
-const documentaryUrl = "https://www.youtube.com/watch?v=SSdwbEcAsWc&t=12s";
+const backgroundImage = '/images/documentary/amazon-river-dawn.png';
+const documentaryUrl = 'https://www.youtube.com/watch?v=SSdwbEcAsWc&t=12s';
 
 export function DocumentarySection() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const isSmoothScrollReady = useSmoothScrollReady();
-  const reduceMotion = useMotionProfile() === "reduced";
+  const reduceMotion = useMotionProfile() === 'reduced';
 
   useGSAP(
     () => {
@@ -36,12 +36,12 @@ export function DocumentarySection() {
           autoAlpha: 1,
           yPercent: 0,
           duration: 1.05,
-          ease: "power3.out",
-          clearProps: "opacity,visibility,transform",
+          ease: 'power3.out',
+          clearProps: 'opacity,visibility,transform',
           scrollTrigger: {
             trigger: section,
-            start: "top 88%",
-            once: true,
+            start: 'top 88%',
+            toggleActions: 'play none none reverse',
           },
         },
       );

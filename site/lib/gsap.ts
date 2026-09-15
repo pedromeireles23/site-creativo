@@ -7,15 +7,32 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
 
-let refreshFrame: number | undefined;
+let refreshPromise: Promise<void> | undefined;
+
+function requestScrollRefresh() {
+  if (typeof window === 'undefined') return Promise.resolve();
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = new Promise<void>((resolve) => {
+    window.requestAnimationFrame(() => {
+      try {
+        ScrollTrigger.refresh();
+      } finally {
+        refreshPromise = undefined;
+        resolve();
+      }
+    });
+  });
+
+  return refreshPromise;
+}
 
 export function scheduleScrollRefresh() {
-  if (typeof window === 'undefined' || refreshFrame !== undefined) return;
+  void requestScrollRefresh();
+}
 
-  refreshFrame = window.requestAnimationFrame(() => {
-    refreshFrame = undefined;
-    ScrollTrigger.refresh();
-  });
+export function waitForScrollRefresh() {
+  return requestScrollRefresh();
 }
 
 export { gsap, ScrollTrigger, useGSAP };
