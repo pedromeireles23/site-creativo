@@ -265,6 +265,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         let hashFrame: number | undefined;
         let hashRequestId = 0;
         let tickerActive = false;
+        let viewportWidth = window.innerWidth;
 
         const scrollToHash = () => {
           const requestId = hashRequestId;
@@ -315,18 +316,30 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
           }
         };
 
-        const scheduleRefresh = () => {
+        const refreshLayout = (forceScrollRefresh = false) => {
+          lenis.resize();
+
+          const nextViewportWidth = window.innerWidth;
+          if (forceScrollRefresh || nextViewportWidth !== viewportWidth) {
+            viewportWidth = nextViewportWidth;
+            scheduleScrollRefresh();
+          }
+        };
+
+        const scheduleRefresh = (forceScrollRefresh = false) => {
           window.clearTimeout(refreshTimeout);
           refreshTimeout = window.setTimeout(() => {
-            lenis.resize();
-            scheduleScrollRefresh();
-          }, 120);
+            refreshLayout(forceScrollRefresh);
+          }, 200);
         };
+
+        const handleResize = () => scheduleRefresh(false);
+        const handleOrientationChange = () => scheduleRefresh(true);
 
         setTickerActive(!document.hidden);
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('resize', scheduleRefresh, { passive: true });
-        window.addEventListener('orientationchange', scheduleRefresh, {
+        window.addEventListener('resize', handleResize, { passive: true });
+        window.addEventListener('orientationchange', handleOrientationChange, {
           passive: true,
         });
         window.addEventListener('hashchange', scheduleHashScroll);
@@ -337,9 +350,11 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         window.addEventListener('pageshow', handlePageShow);
 
         if (document.readyState === 'complete') {
-          scheduleRefresh();
+          scheduleRefresh(true);
         } else {
-          window.addEventListener('load', scheduleRefresh, { once: true });
+          window.addEventListener('load', handleOrientationChange, {
+            once: true,
+          });
         }
 
         const initialHashTimeout = window.setTimeout(scheduleHashScroll, 180);
@@ -347,7 +362,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
         void document.fonts.ready.then(() => {
           if (!disposed) {
-            scheduleRefresh();
+            scheduleRefresh(true);
             scheduleHashScroll();
           }
         });
@@ -362,9 +377,12 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
             'visibilitychange',
             handleVisibilityChange,
           );
-          window.removeEventListener('load', scheduleRefresh);
-          window.removeEventListener('resize', scheduleRefresh);
-          window.removeEventListener('orientationchange', scheduleRefresh);
+          window.removeEventListener('load', handleOrientationChange);
+          window.removeEventListener('resize', handleResize);
+          window.removeEventListener(
+            'orientationchange',
+            handleOrientationChange,
+          );
           window.removeEventListener('hashchange', scheduleHashScroll);
           window.removeEventListener('popstate', scheduleHashScroll);
           window.removeEventListener('pageshow', handlePageShow);

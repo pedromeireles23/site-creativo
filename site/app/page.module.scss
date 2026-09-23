@@ -903,20 +903,31 @@
 
 .grid {
   position: fixed;
-  z-index: 60;
+  z-index: 2;
   inset: 0;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   padding: 0 var(--page-grid-edge);
   pointer-events: none;
+  mix-blend-mode: difference;
+  opacity: 0.1;
 
   span {
-    border-left: 1px solid rgb(168 184 174 / 17%);
+    border-left: 0.5px solid var(--ivory-50);
 
     &:last-child {
-      border-right: 1px solid rgb(168 184 174 / 17%);
+      border-right: 0.5px solid var(--ivory-50);
     }
   }
+}
+
+/* Media surfaces sit above the fixed guide grid, as in the reference site. */
+.heroSequence,
+.water,
+.layers,
+.territoryJourney {
+  position: relative;
+  z-index: 3;
 }
 
 .hero,
@@ -3856,6 +3867,8 @@
   .layersScribble {
     width: 132%;
     height: 128%;
+    stroke: rgb(20 32 27 / 44%);
+    stroke-width: 1.35;
   }
 
   .faunaPanels {
@@ -4324,6 +4337,8 @@
 
     svg {
       width: min(13rem, 62vw);
+      stroke: rgb(20 32 27 / 44%);
+      stroke-width: 1.35;
     }
   }
 
@@ -4479,7 +4494,7 @@
   .documentaryLineClip {
     max-width: 12ch;
     font-size: clamp(3rem, 11.5vw, 5.5rem);
-    line-height: 0.88;
+    line-height: 1.04;
   }
 
   .documentaryAction {
@@ -4726,6 +4741,11 @@
   .section {
     padding-right: 1rem;
     padding-left: 1rem;
+  }
+
+  .documentary {
+    padding-right: 0;
+    padding-left: 0;
   }
 
   .territories {

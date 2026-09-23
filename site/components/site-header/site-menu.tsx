@@ -30,6 +30,7 @@ export function SiteMenu({
   open,
 }: SiteMenuProps) {
   const panelGroupRef = useRef<HTMLDivElement>(null);
+  const mobileViewRef = useRef<HTMLDivElement>(null);
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
   const motionProfile = useMotionProfile();
@@ -122,6 +123,35 @@ export function SiteMenu({
           y: 0,
           duration: motionProfile === 'reduced' ? 0 : 0.42,
           stagger: 0.04,
+          ease: 'power2.out',
+        },
+      );
+    },
+    {
+      dependencies: [activeMenu, motionProfile, open],
+      scope: panelGroupRef,
+      revertOnUpdate: true,
+    },
+  );
+
+  useGSAP(
+    () => {
+      const mobileView = mobileViewRef.current;
+      if (
+        !open ||
+        activeMenu === 'index' ||
+        !mobileView ||
+        window.innerWidth > 800
+      ) {
+        return;
+      }
+
+      gsap.fromTo(
+        mobileView,
+        { autoAlpha: 0 },
+        {
+          autoAlpha: 1,
+          duration: motionProfile === 'reduced' ? 0 : 0.35,
           ease: 'power2.out',
         },
       );
@@ -259,7 +289,22 @@ export function SiteMenu({
 
               <div className={styles.mobileMenu}>
                 <div className={styles.mobileMenuTop}>
-                  <p>Floresta viva</p>
+                  <button
+                    className={styles.mobileMenuClose}
+                    data-cursor-tone={'gold'}
+                    type={'button'}
+                    onClick={closeMenu}
+                  >
+                    <span>Fechar</span>
+                    <svg
+                      aria-hidden={'true'}
+                      viewBox={'0 0 11 11'}
+                      width={'16'}
+                      height={'16'}
+                    >
+                      <path d={'M2 2h7v7M9 2 2 9'} />
+                    </svg>
+                  </button>
                 </div>
 
                 <div className={styles.mobileMenuTitleBar}>
@@ -323,7 +368,11 @@ export function SiteMenu({
                     ))}
                   </nav>
                 ) : (
-                  <div className={styles.mobileMenuContent} data-lenis-prevent>
+                  <div
+                    className={styles.mobileMenuContent}
+                    data-lenis-prevent
+                    ref={mobileViewRef}
+                  >
                     <p className={styles.mobileMenuEyebrow}>
                       {activeGroup.eyebrow}
                     </p>

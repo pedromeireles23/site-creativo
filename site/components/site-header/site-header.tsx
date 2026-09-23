@@ -220,7 +220,6 @@ export function SiteHeader() {
       </header>
 
       <SiteMenu
-        key={activeMenu}
         activeMenu={activeMenu}
         onActiveMenuChange={setActiveMenu}
         onClose={closeMenu}

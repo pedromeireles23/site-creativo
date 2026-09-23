@@ -311,18 +311,31 @@ export function HeroExperience() {
             );
 
             if (scribblePaths.length) {
-              kickerReveal.fromTo(
+              const kickerScribbleReveal = gsap.fromTo(
                 scribblePaths,
                 { strokeDashoffset: 520 },
                 {
                   strokeDashoffset: 0,
-                  duration: 0.86,
-                  stagger: 0.06,
-                  ease: 'power2.out',
+                  stagger: 0.08,
+                  ease: 'none',
                   immediateRender: false,
+                  scrollTrigger: {
+                    trigger: breathKicker,
+                    start: 'top 94%',
+                    end: 'top 56%',
+                    scrub: 0.45,
+                    invalidateOnRefresh: true,
+                  },
                 },
-                0.08,
               );
+
+              return () => {
+                heroTimeline.kill();
+                chapterReveal.kill();
+                copyReveal.kill();
+                kickerReveal.kill();
+                kickerScribbleReveal.kill();
+              };
             }
 
             return () => {

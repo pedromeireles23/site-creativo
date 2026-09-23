@@ -89,25 +89,36 @@ export function FaunaSection() {
       if (!cards.length) return;
 
       const media = gsap.matchMedia();
-      const scribbleReveal =
-        heading && scribblePaths.length
-          ? gsap.fromTo(
-              scribblePaths,
-              { strokeDashoffset: 1400 },
-              {
-                strokeDashoffset: 0,
-                stagger: 0.1,
-                ease: 'none',
-                scrollTrigger: {
-                  trigger: heading,
-                  start: 'top 84%',
-                  end: 'top 44%',
-                  scrub: 0.35,
-                  invalidateOnRefresh: true,
-                },
+
+      media.add(
+        {
+          compact: MOTION_QUERIES.compact,
+          wide: MOTION_QUERIES.wide,
+        },
+        (context) => {
+          if (!heading || !scribblePaths.length) return;
+
+          const { compact } = context.conditions as { compact: boolean };
+          const scribbleReveal = gsap.fromTo(
+            scribblePaths,
+            { strokeDashoffset: 1400 },
+            {
+              strokeDashoffset: 0,
+              stagger: compact ? 0.14 : 0.1,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: heading,
+                start: compact ? 'top 94%' : 'top 84%',
+                end: compact ? 'top 58%' : 'top 44%',
+                scrub: compact ? 0.5 : 0.35,
+                invalidateOnRefresh: true,
               },
-            )
-          : null;
+            },
+          );
+
+          return () => scribbleReveal.kill();
+        },
+      );
 
       media.add(MOTION_QUERIES.compact, () => {
         const animations = cards.flatMap((card, index) => {
@@ -158,7 +169,6 @@ export function FaunaSection() {
 
       scheduleScrollRefresh();
       return () => {
-        scribbleReveal?.kill();
         media.revert();
       };
     },
