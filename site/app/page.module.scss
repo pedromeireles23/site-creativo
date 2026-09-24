@@ -922,7 +922,7 @@
 }
 
 /* Media surfaces sit above the fixed guide grid, as in the reference site. */
-.hero,
+.heroStage,
 .water,
 .layers,
 .territoryJourney {
@@ -3755,6 +3755,35 @@
       rgb(243 240 231 / 90%) 66%,
       var(--ivory-50) 84%
     );
+
+    &::after {
+      position: absolute;
+      z-index: 2;
+      inset: 0 var(--page-grid-edge);
+      border-right: 0.5px solid var(--ivory-50);
+      background-image: linear-gradient(
+        to right,
+        var(--ivory-50) 0 0.5px,
+        transparent 0.5px
+      );
+      background-size: calc(100% / 8) 100%;
+      content: '';
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 42%,
+        rgb(0 0 0 / 18%) 60%,
+        #000 84%
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 42%,
+        rgb(0 0 0 / 18%) 60%,
+        #000 84%
+      );
+      mix-blend-mode: difference;
+      opacity: 0.1;
+      pointer-events: none;
+    }
   }
 
   .heroTransitionMist {

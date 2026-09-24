@@ -265,10 +265,6 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         let hashFrame: number | undefined;
         let hashRequestId = 0;
         let tickerActive = false;
-        let viewportWidth = window.innerWidth;
-        let viewportHeight =
-          window.visualViewport?.height ?? window.innerHeight;
-        let viewportRefreshTimeout: number | undefined;
 
         const scrollToHash = () => {
           const requestId = hashRequestId;
@@ -319,48 +315,18 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
           }
         };
 
-        const refreshLayout = (forceScrollRefresh = false) => {
-          lenis.resize();
-
-          const nextViewportWidth = window.innerWidth;
-          const nextViewportHeight =
-            window.visualViewport?.height ?? window.innerHeight;
-          const widthChanged = nextViewportWidth !== viewportWidth;
-          const heightChanged =
-            Math.abs(nextViewportHeight - viewportHeight) > 1;
-
-          viewportWidth = nextViewportWidth;
-          viewportHeight = nextViewportHeight;
-
-          if (forceScrollRefresh || widthChanged) {
-            window.clearTimeout(viewportRefreshTimeout);
-            scheduleScrollRefresh();
-          } else if (heightChanged) {
-            window.clearTimeout(viewportRefreshTimeout);
-            viewportRefreshTimeout = window.setTimeout(() => {
-              lenis.resize();
-              scheduleScrollRefresh();
-            }, 420);
-          }
-        };
-
-        const scheduleRefresh = (forceScrollRefresh = false) => {
+        const scheduleRefresh = () => {
           window.clearTimeout(refreshTimeout);
           refreshTimeout = window.setTimeout(() => {
-            refreshLayout(forceScrollRefresh);
-          }, 200);
+            lenis.resize();
+            scheduleScrollRefresh();
+          }, 120);
         };
-
-        const handleResize = () => scheduleRefresh(false);
-        const handleOrientationChange = () => scheduleRefresh(true);
 
         setTickerActive(!document.hidden);
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('resize', handleResize, { passive: true });
-        window.visualViewport?.addEventListener('resize', handleResize, {
-          passive: true,
-        });
-        window.addEventListener('orientationchange', handleOrientationChange, {
+        window.addEventListener('resize', scheduleRefresh, { passive: true });
+        window.addEventListener('orientationchange', scheduleRefresh, {
           passive: true,
         });
         window.addEventListener('hashchange', scheduleHashScroll);
@@ -371,11 +337,9 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         window.addEventListener('pageshow', handlePageShow);
 
         if (document.readyState === 'complete') {
-          scheduleRefresh(true);
+          scheduleRefresh();
         } else {
-          window.addEventListener('load', handleOrientationChange, {
-            once: true,
-          });
+          window.addEventListener('load', scheduleRefresh, { once: true });
         }
 
         const initialHashTimeout = window.setTimeout(scheduleHashScroll, 180);
@@ -383,7 +347,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
         void document.fonts.ready.then(() => {
           if (!disposed) {
-            scheduleRefresh(true);
+            scheduleRefresh();
             scheduleHashScroll();
           }
         });
@@ -398,18 +362,13 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
             'visibilitychange',
             handleVisibilityChange,
           );
-          window.removeEventListener('load', handleOrientationChange);
-          window.removeEventListener('resize', handleResize);
-          window.visualViewport?.removeEventListener('resize', handleResize);
-          window.removeEventListener(
-            'orientationchange',
-            handleOrientationChange,
-          );
+          window.removeEventListener('load', scheduleRefresh);
+          window.removeEventListener('resize', scheduleRefresh);
+          window.removeEventListener('orientationchange', scheduleRefresh);
           window.removeEventListener('hashchange', scheduleHashScroll);
           window.removeEventListener('popstate', scheduleHashScroll);
           window.removeEventListener('pageshow', handlePageShow);
           window.clearTimeout(refreshTimeout);
-          window.clearTimeout(viewportRefreshTimeout);
           window.clearTimeout(initialHashTimeout);
           window.clearTimeout(settledHashTimeout);
 

@@ -89,45 +89,31 @@ export function FaunaSection() {
       if (!cards.length) return;
 
       const media = gsap.matchMedia();
+      const compact = window.matchMedia(MOTION_QUERIES.compact).matches;
+      const paths = Array.from(scribblePaths);
+      paths.forEach((path) => {
+        const length = Math.ceil(path.getTotalLength());
+        gsap.set(path, {
+          strokeDasharray: length,
+          strokeDashoffset: length,
+        });
+      });
 
-      media.add(
-        {
-          compact: MOTION_QUERIES.compact,
-          wide: MOTION_QUERIES.wide,
-        },
-        (context) => {
-          if (!heading || !scribblePaths.length) return;
-
-          const { compact } = context.conditions as { compact: boolean };
-          const paths = Array.from(scribblePaths);
-          paths.forEach((path) => {
-            const length = Math.ceil(path.getTotalLength());
-            gsap.set(path, {
-              strokeDasharray: length,
-              strokeDashoffset: length,
-            });
-          });
-
-          const scribbleReveal = gsap
-            .timeline({
+      const scribbleReveal =
+        heading && paths.length
+          ? gsap.to(paths, {
+              strokeDashoffset: 0,
+              stagger: compact ? 0.16 : 0.1,
+              ease: 'none',
               scrollTrigger: {
                 trigger: heading,
-                start: compact ? 'top 96%' : 'top 84%',
-                end: compact ? 'top 42%' : 'top 44%',
-                scrub: compact ? 0.28 : 0.35,
+                start: compact ? 'top 82%' : 'top 84%',
+                end: compact ? 'top 36%' : 'top 44%',
+                scrub: compact ? 0.2 : 0.35,
                 invalidateOnRefresh: true,
               },
             })
-            .to(paths, {
-              strokeDashoffset: 0,
-              duration: 1,
-              stagger: compact ? 0.18 : 0.1,
-              ease: 'none',
-            });
-
-          return () => scribbleReveal.kill();
-        },
-      );
+          : null;
 
       media.add(MOTION_QUERIES.compact, () => {
         const animations = cards.flatMap((card, index) => {
@@ -178,6 +164,7 @@ export function FaunaSection() {
 
       scheduleScrollRefresh();
       return () => {
+        scribbleReveal?.kill();
         media.revert();
       };
     },

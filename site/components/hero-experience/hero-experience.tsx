@@ -312,38 +312,26 @@ export function HeroExperience() {
 
             if (scribblePaths.length) {
               const kickerScribblePaths = Array.from(scribblePaths);
-              kickerScribblePaths.forEach((path) => {
-                const length = Math.ceil(path.getTotalLength());
+              const kickerScribbleLengths = kickerScribblePaths.map((path) =>
+                Math.ceil(path.getTotalLength()),
+              );
+              kickerScribblePaths.forEach((path, index) => {
                 gsap.set(path, {
-                  strokeDasharray: length,
-                  strokeDashoffset: length,
+                  strokeDasharray: kickerScribbleLengths[index],
+                  strokeDashoffset: kickerScribbleLengths[index],
                 });
               });
 
-              const kickerScribbleReveal = gsap
-                .timeline({
-                  scrollTrigger: {
-                    trigger: breathKicker,
-                    start: 'top 96%',
-                    end: 'top 45%',
-                    scrub: 0.28,
-                    invalidateOnRefresh: true,
-                  },
-                })
-                .to(kickerScribblePaths, {
+              kickerReveal.to(
+                kickerScribblePaths,
+                {
                   strokeDashoffset: 0,
-                  duration: 1,
-                  stagger: 0.18,
-                  ease: 'none',
-                });
-
-              return () => {
-                heroTimeline.kill();
-                chapterReveal.kill();
-                copyReveal.kill();
-                kickerReveal.kill();
-                kickerScribbleReveal.kill();
-              };
+                  duration: 1.15,
+                  stagger: 0.14,
+                  ease: 'power2.out',
+                },
+                0.08,
+              );
             }
 
             return () => {
