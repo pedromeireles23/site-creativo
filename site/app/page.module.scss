@@ -922,7 +922,7 @@
 }
 
 /* Media surfaces sit above the fixed guide grid, as in the reference site. */
-.heroSequence,
+.hero,
 .water,
 .layers,
 .territoryJourney {
@@ -1273,8 +1273,8 @@
   }
 
   path {
-    stroke-dasharray: 520;
-    stroke-dashoffset: 520;
+    stroke-dasharray: 800;
+    stroke-dashoffset: 800;
   }
 }
 
@@ -1542,8 +1542,8 @@
   transform: translate(-50%, -49%);
 
   path {
-    stroke-dasharray: 1400;
-    stroke-dashoffset: 1400;
+    stroke-dasharray: 1600;
+    stroke-dashoffset: 1600;
     vector-effect: non-scaling-stroke;
   }
 }

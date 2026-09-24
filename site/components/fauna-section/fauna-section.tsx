@@ -99,22 +99,31 @@ export function FaunaSection() {
           if (!heading || !scribblePaths.length) return;
 
           const { compact } = context.conditions as { compact: boolean };
-          const scribbleReveal = gsap.fromTo(
-            scribblePaths,
-            { strokeDashoffset: 1400 },
-            {
-              strokeDashoffset: 0,
-              stagger: compact ? 0.14 : 0.1,
-              ease: 'none',
+          const paths = Array.from(scribblePaths);
+          paths.forEach((path) => {
+            const length = Math.ceil(path.getTotalLength());
+            gsap.set(path, {
+              strokeDasharray: length,
+              strokeDashoffset: length,
+            });
+          });
+
+          const scribbleReveal = gsap
+            .timeline({
               scrollTrigger: {
                 trigger: heading,
-                start: compact ? 'top 94%' : 'top 84%',
-                end: compact ? 'top 58%' : 'top 44%',
-                scrub: compact ? 0.5 : 0.35,
+                start: compact ? 'top 96%' : 'top 84%',
+                end: compact ? 'top 42%' : 'top 44%',
+                scrub: compact ? 0.28 : 0.35,
                 invalidateOnRefresh: true,
               },
-            },
-          );
+            })
+            .to(paths, {
+              strokeDashoffset: 0,
+              duration: 1,
+              stagger: compact ? 0.18 : 0.1,
+              ease: 'none',
+            });
 
           return () => scribbleReveal.kill();
         },

@@ -311,23 +311,31 @@ export function HeroExperience() {
             );
 
             if (scribblePaths.length) {
-              const kickerScribbleReveal = gsap.fromTo(
-                scribblePaths,
-                { strokeDashoffset: 520 },
-                {
-                  strokeDashoffset: 0,
-                  stagger: 0.08,
-                  ease: 'none',
-                  immediateRender: false,
+              const kickerScribblePaths = Array.from(scribblePaths);
+              kickerScribblePaths.forEach((path) => {
+                const length = Math.ceil(path.getTotalLength());
+                gsap.set(path, {
+                  strokeDasharray: length,
+                  strokeDashoffset: length,
+                });
+              });
+
+              const kickerScribbleReveal = gsap
+                .timeline({
                   scrollTrigger: {
                     trigger: breathKicker,
-                    start: 'top 94%',
-                    end: 'top 56%',
-                    scrub: 0.45,
+                    start: 'top 96%',
+                    end: 'top 45%',
+                    scrub: 0.28,
                     invalidateOnRefresh: true,
                   },
-                },
-              );
+                })
+                .to(kickerScribblePaths, {
+                  strokeDashoffset: 0,
+                  duration: 1,
+                  stagger: 0.18,
+                  ease: 'none',
+                });
 
               return () => {
                 heroTimeline.kill();

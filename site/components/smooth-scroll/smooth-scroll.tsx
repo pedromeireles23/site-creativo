@@ -266,6 +266,9 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         let hashRequestId = 0;
         let tickerActive = false;
         let viewportWidth = window.innerWidth;
+        let viewportHeight =
+          window.visualViewport?.height ?? window.innerHeight;
+        let viewportRefreshTimeout: number | undefined;
 
         const scrollToHash = () => {
           const requestId = hashRequestId;
@@ -320,9 +323,24 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
           lenis.resize();
 
           const nextViewportWidth = window.innerWidth;
-          if (forceScrollRefresh || nextViewportWidth !== viewportWidth) {
-            viewportWidth = nextViewportWidth;
+          const nextViewportHeight =
+            window.visualViewport?.height ?? window.innerHeight;
+          const widthChanged = nextViewportWidth !== viewportWidth;
+          const heightChanged =
+            Math.abs(nextViewportHeight - viewportHeight) > 1;
+
+          viewportWidth = nextViewportWidth;
+          viewportHeight = nextViewportHeight;
+
+          if (forceScrollRefresh || widthChanged) {
+            window.clearTimeout(viewportRefreshTimeout);
             scheduleScrollRefresh();
+          } else if (heightChanged) {
+            window.clearTimeout(viewportRefreshTimeout);
+            viewportRefreshTimeout = window.setTimeout(() => {
+              lenis.resize();
+              scheduleScrollRefresh();
+            }, 420);
           }
         };
 
@@ -339,6 +357,9 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
         setTickerActive(!document.hidden);
         document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('resize', handleResize, { passive: true });
+        window.visualViewport?.addEventListener('resize', handleResize, {
+          passive: true,
+        });
         window.addEventListener('orientationchange', handleOrientationChange, {
           passive: true,
         });
@@ -379,6 +400,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
           );
           window.removeEventListener('load', handleOrientationChange);
           window.removeEventListener('resize', handleResize);
+          window.visualViewport?.removeEventListener('resize', handleResize);
           window.removeEventListener(
             'orientationchange',
             handleOrientationChange,
@@ -387,6 +409,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
           window.removeEventListener('popstate', scheduleHashScroll);
           window.removeEventListener('pageshow', handlePageShow);
           window.clearTimeout(refreshTimeout);
+          window.clearTimeout(viewportRefreshTimeout);
           window.clearTimeout(initialHashTimeout);
           window.clearTimeout(settledHashTimeout);
 
